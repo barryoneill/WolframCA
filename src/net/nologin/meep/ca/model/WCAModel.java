@@ -82,6 +82,7 @@ public class WCAModel {
     }
 
 
+
     public void renderCA(Canvas c, Paint p, float scaleFactor){
 
         int BOX_SIZE = 10;

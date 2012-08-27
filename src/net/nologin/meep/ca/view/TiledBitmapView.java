@@ -10,11 +10,12 @@ import net.nologin.meep.ca.model.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 public class TiledBitmapView extends SurfaceView
         implements SurfaceHolder.Callback {
+
+    public static final int TILE_SIZE = 256;
 
     Paint paint_bg;
     Paint paint_msgText;
@@ -27,24 +28,14 @@ public class TiledBitmapView extends SurfaceView
     int width;
     int height;
 
-    Random r = new Random();
 
     List<Tile> activeTiles;
-
-    public TiledBitmapView(Context context) {
-        super(context);
-        initView();
-    }
 
     public TiledBitmapView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initView();
     }
 
-    public TiledBitmapView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        initView();
-    }
 
     private void initView() {
 
@@ -79,18 +70,12 @@ public class TiledBitmapView extends SurfaceView
 
     }
 
-    public void togglePause(){
-        tgThread.togglePause();
-    }
 
     class TileGenerationThread extends Thread {
 
         private final SurfaceHolder holder;
         private TiledBitmapView view;
         private boolean running = false;
-
-        private boolean paused = false;
-
 
         public TileGenerationThread(SurfaceHolder holder, TiledBitmapView view) {
             this.holder = holder;
@@ -115,28 +100,25 @@ public class TiledBitmapView extends SurfaceView
 
                         view.onDraw(c);
 
-                        if(!paused){
-                            for (Tile t : activeTiles) {
-                                if (!t.fresh) {
-                                    t.populateRandom(pixelOnColor, pixelOffColor);
-                                    break;
-                                }
+                        for (Tile t : activeTiles) {
+                            if (!t.fresh) {
+                                t.populateRandom(pixelOnColor, pixelOffColor);
+                                break;
                             }
-
-                            if (loopCnt++ == activeTiles.size()) {
-                                for (Tile t : activeTiles) {
-                                    t.fresh = false;
-                                }
-                                loopCnt = 0;
-                            }
-
                         }
+
+                        if (loopCnt++ == activeTiles.size()) {
+                            running = false;
+                        }
+
+
                     }
-                    Thread.sleep(16);
+                    Thread.sleep(16); // so we can interact in a reasonable time
+
 
                 }
                 catch(InterruptedException e){
-
+                    // nop
                 }
                 finally {
                     // do this in a finally so that if an exception is thrown
@@ -150,11 +132,7 @@ public class TiledBitmapView extends SurfaceView
 
         }
 
-        public void togglePause() {
-            synchronized (holder) {
-                paused = !paused;
-            }
-        }
+
     }
 
 
@@ -168,12 +146,15 @@ public class TiledBitmapView extends SurfaceView
         // draw BG
         canvas.drawRect(new Rect(0, 0, width, height), paint_bg);
 
+        Bitmap bmp = Bitmap.createBitmap(TILE_SIZE, TILE_SIZE, Bitmap.Config.RGB_565);
+
         if (activeTiles != null) {
 
             for (Tile t : activeTiles) {
 
-                if (t.bitmap != null) {
-                    canvas.drawBitmap(t.bitmap, t.x, t.y, paint_bg);
+                if (t.bmpData != null) {
+                    bmp.setPixels(t.bmpData, 0, TILE_SIZE, 0, 0, TILE_SIZE, TILE_SIZE);
+                    canvas.drawBitmap(bmp, t.x, t.y, null);
                 } else {
 
                     canvas.drawRect(t.rect, paint_gridLine);
@@ -185,7 +166,8 @@ public class TiledBitmapView extends SurfaceView
 
         }
 
-        String msg = width  + "x" + height + ", " + activeTiles.size() + " tiles";
+        int numTiles = activeTiles == null ? 0 : activeTiles.size();
+        String msg = width  + "x" + height + ", " + numTiles + " tiles";
         canvas.drawText(msg, width / 2, height / 2, paint_msgText);
 
         canvas.restore();
@@ -207,12 +189,12 @@ public class TiledBitmapView extends SurfaceView
         this.width = width;
         this.height = height;
 
-        int NUM_HORIZ = width / 256 + 1;
-        int NUM_VERT = height / 256 + 1;
+        int NUM_HORIZ = width / TILE_SIZE + 1;
+        int NUM_VERT = height / TILE_SIZE + 1;
 
         for (int row = 0; row < NUM_HORIZ; row++) {
             for (int col = 0; col < NUM_VERT; col++) {
-                activeTiles.add(new Tile(row * 256, col * 256, 256));
+                activeTiles.add(new Tile(row * TILE_SIZE, col * TILE_SIZE, TILE_SIZE));
             }
         }
 
