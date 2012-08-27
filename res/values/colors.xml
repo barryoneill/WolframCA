@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="CAView_PixelOn">#00ff00</color>
+    <color name="CAView_PixelOff">#000000</color>
+</resources>
