@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Tile {
 
-    public boolean[][] state;
+    public int[] state;
     public int x;
     public int y;
     public int size;

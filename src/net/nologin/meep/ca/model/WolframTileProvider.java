@@ -1,6 +1,8 @@
 package net.nologin.meep.ca.model;
 
+import android.content.Context;
 import android.graphics.Color;
+import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
 import java.util.*;
@@ -9,6 +11,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     public static final int TILE_SIZE = 256;
 
+    private Context ctx;
     List<Tile> tiles;
     int staleCnt = 0;
     int ruleNo = 0;
@@ -17,12 +20,19 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     @Deprecated
     int[] initVal;
 
-    public WolframTileProvider(int ruleNo){
+    private int PIXEL_ON, PIXEL_OFF;
+
+    public WolframTileProvider(Context ctx, int ruleNo){
         tiles = new ArrayList<Tile>();
         this.ruleNo = ruleNo;
+
+        PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
+        PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
+
+
         initVal = new int[256];
-        Arrays.fill(initVal,Color.BLACK);
-        initVal[initVal.length/2] = Color.GREEN;
+        Arrays.fill(initVal,PIXEL_OFF);
+        initVal[initVal.length/2] = PIXEL_ON;
     }
 
 
@@ -58,7 +68,9 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         Tile t = tiles.get(staleCnt-1);
 
-        t.state = new boolean[TILE_SIZE][TILE_SIZE];
+        //t.state = new boolean[TILE_SIZE][TILE_SIZE];
+
+        t.state = new int[TILE_SIZE*TILE_SIZE];
 
         for (int row = 0; row < TILE_SIZE; row++) {
             int rowOffset = row * TILE_SIZE;
@@ -83,7 +95,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
 
 
-                t.state[row][col] = r.nextInt(10) % 3 == 0;
+                t.state[rowOffset+col] = r.nextInt(10) == 5 ? PIXEL_ON : PIXEL_OFF;
 
             }
 

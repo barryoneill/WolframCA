@@ -52,7 +52,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         tgThread = new TileGenerationThread(holder, this);
 
         // TODO: register tileProvider
-        tileProvider = new WolframTileProvider(91);
+        tileProvider = new WolframTileProvider(context,91);
 
         // background paint
         paint_bg = new Paint();
@@ -156,7 +156,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             int tileSize = tileProvider.getTileSize();
             Bitmap bmp = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565);
 
-            int[] bmpData = new int[tileSize * tileSize];
+//            int[] bmpData = new int[tileSize * tileSize];
 
             Iterator<Tile> tilesIter = tileProvider.getActiveTilesIter();
             while (tilesIter.hasNext()) {
@@ -165,14 +165,14 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
                 if (t.state != null) {
 
-                    for (int row = 0; row < tileSize; row++) {
-                        int rowOffset = row * tileSize;
-                        for (int col = 0; col < tileSize; col++) {
-                            bmpData[rowOffset + col] = t.state[row][col] ? Color.GREEN : Color.BLACK;
-                        }
-                    }
+//                    for (int row = 0; row < tileSize; row++) {
+//                        int rowOffset = row * tileSize;
+//                        for (int col = 0; col < tileSize; col++) {
+//                            bmpData[rowOffset + col] = t.state[row][col] ? Color.GREEN : Color.BLACK;
+//                        }
+//                    }
 
-                    bmp.setPixels(bmpData, 0, tileSize, 0, 0, tileSize, tileSize);
+                    bmp.setPixels(t.state, 0, tileSize, 0, 0, tileSize, tileSize);
                     canvas.drawBitmap(bmp, t.x, t.y, null);
                 } else {
                     canvas.drawRect(t.rect, paint_gridLine);
