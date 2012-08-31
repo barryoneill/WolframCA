@@ -12,6 +12,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     List<Tile> tiles;
     int staleCnt = 0;
     int ruleNo = 0;
+    Random r = new Random();
 
     @Deprecated
     int[] initVal;
@@ -57,43 +58,32 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         Tile t = tiles.get(staleCnt-1);
 
-        t.bmpData = new int[TILE_SIZE * TILE_SIZE];
+        t.state = new boolean[TILE_SIZE][TILE_SIZE];
 
         for (int row = 0; row < TILE_SIZE; row++) {
             int rowOffset = row * TILE_SIZE;
 
-            // boolean[] prev = GRID[time-1];
-            // boolean[] next = GRID[time];
-
             for (int col = 0; col < TILE_SIZE; col++) {
 
-                boolean a,b,c;
-                if(row == 0){
-
-                    a = col != 0 && initVal[col-1] != Color.BLACK;
-                    b = initVal[col] == Color.BLACK;
-                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
-                }
-                else{
-
-                    a = col != 0 && initVal[col-1] != Color.BLACK;
-                    b = initVal[col] == Color.BLACK;
-                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
-                }
-
-//                boolean a = col != 0 &&
+//                boolean a,b,c;
+//                if(row == 0){
 //
-//                next[i] = checkRule(i!=0 && prev[i-1],
-//                        prev[i],
-//                        i<prev.length-1 && prev[i+1]);
+//                    a = col != 0 && initVal[col-1] != Color.BLACK;
+//                    b = initVal[col] == Color.BLACK;
+//                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
+//                }
+//                else{
+//
+//                    a = col != 0 && initVal[col-1] != Color.BLACK;
+//                    b = initVal[col] == Color.BLACK;
+//                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
+//                }
 
                 //boolean set = initVal[col];
 
-                BitSet bs = new BitSet();
 
 
-
-                t.bmpData[rowOffset + col] = true ? Color.GREEN : Color.BLACK;
+                t.state[row][col] = r.nextInt(10) % 3 == 0;
 
             }
 

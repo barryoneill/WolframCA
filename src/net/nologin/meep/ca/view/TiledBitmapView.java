@@ -46,7 +46,6 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         super(context, attrs);
 
-
         SurfaceHolder holder = getHolder();
 
         holder.addCallback(this);
@@ -157,13 +156,23 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             int tileSize = tileProvider.getTileSize();
             Bitmap bmp = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565);
 
+            int[] bmpData = new int[tileSize * tileSize];
+
             Iterator<Tile> tilesIter = tileProvider.getActiveTilesIter();
             while (tilesIter.hasNext()) {
 
                 Tile t = tilesIter.next();
 
-                if (t.bmpData != null) {
-                    bmp.setPixels(t.bmpData, 0, tileSize, 0, 0, tileSize, tileSize);
+                if (t.state != null) {
+
+                    for (int row = 0; row < tileSize; row++) {
+                        int rowOffset = row * tileSize;
+                        for (int col = 0; col < tileSize; col++) {
+                            bmpData[rowOffset + col] = t.state[row][col] ? Color.GREEN : Color.BLACK;
+                        }
+                    }
+
+                    bmp.setPixels(bmpData, 0, tileSize, 0, 0, tileSize, tileSize);
                     canvas.drawBitmap(bmp, t.x, t.y, null);
                 } else {
                     canvas.drawRect(t.rect, paint_gridLine);
