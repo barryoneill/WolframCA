@@ -1,7 +1,6 @@
 package net.nologin.meep.ca.model;
 
 import android.content.Context;
-import android.graphics.Color;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
@@ -68,34 +67,34 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         Tile t = tiles.get(staleCnt-1);
 
-        //t.state = new boolean[TILE_SIZE][TILE_SIZE];
 
         t.state = new int[TILE_SIZE*TILE_SIZE];
 
         for (int row = 0; row < TILE_SIZE; row++) {
+
             int rowOffset = row * TILE_SIZE;
+            int prevRowOffset = (row-1) * TILE_SIZE;
 
             for (int col = 0; col < TILE_SIZE; col++) {
 
-//                boolean a,b,c;
-//                if(row == 0){
-//
-//                    a = col != 0 && initVal[col-1] != Color.BLACK;
-//                    b = initVal[col] == Color.BLACK;
-//                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
-//                }
-//                else{
-//
-//                    a = col != 0 && initVal[col-1] != Color.BLACK;
-//                    b = initVal[col] == Color.BLACK;
-//                    c = col < initVal.length -1 && initVal[col+1] != Color.BLACK;
-//                }
-
-                //boolean set = initVal[col];
+                boolean a,b,c;
+                if(row == 0){
 
 
+                    a = col != 0 && initVal[col-1] != PIXEL_OFF;
+                    b = initVal[col] == PIXEL_OFF;
+                    c = col < initVal.length -1 && initVal[col+1] != PIXEL_OFF;
+                }
+                else{
 
-                t.state[rowOffset+col] = r.nextInt(10) == 5 ? PIXEL_ON : PIXEL_OFF;
+                    a = col != 0 && t.state[prevRowOffset + col-1] != PIXEL_OFF;
+                    b = t.state[prevRowOffset + col] == PIXEL_OFF;
+                    c = col < TILE_SIZE -1 && t.state[prevRowOffset + col+1] != PIXEL_OFF;
+                }
+
+                boolean on = WolframRuleTable.checkRule(ruleNo,a,b,c);
+
+                t.state[rowOffset+col] = on ? PIXEL_ON : PIXEL_OFF;
 
             }
 

@@ -5,7 +5,6 @@ import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
-import net.nologin.meep.ca.model.WCAModel;
 
 public class WolframCAView extends SurfaceView {
 
@@ -66,10 +65,6 @@ public class WolframCAView extends SurfaceView {
     private void renderCA(Canvas canvas){
 
         paint.setColor(Color.BLACK);
-
-        WCAModel model = new WCAModel(mRuleNo, mNumSteps);
-        model.start();
-        model.renderCA(canvas, paint, mScaleFactor);
 
         paint.reset();
 

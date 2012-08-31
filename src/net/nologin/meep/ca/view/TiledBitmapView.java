@@ -5,7 +5,6 @@ import android.view.SurfaceHolder;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
-import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.model.Tile;
 import net.nologin.meep.ca.model.WolframTileProvider;
 
@@ -15,26 +14,9 @@ import java.util.Iterator;
 public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
 
 
-    public interface TileProvider {
-
-        public void onSurfaceChange(int newWidthPx, int newHeightPx);
-
-        public int getTileSize();
-
-        public Iterator<Tile> getActiveTilesIter();
-
-        public boolean hasStaleTiles();
-
-        public void updateNextStale();
-
-    }
-
     Paint paint_bg;
     Paint paint_msgText;
     Paint paint_gridLine;
-
-    int pixelOnColor;
-    int pixelOffColor;
 
     TileGenerationThread tgThread;
     int width;
@@ -52,7 +34,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         tgThread = new TileGenerationThread(holder, this);
 
         // TODO: register tileProvider
-        tileProvider = new WolframTileProvider(context,91);
+        tileProvider = new WolframTileProvider(context,90);
 
         // background paint
         paint_bg = new Paint();
@@ -71,10 +53,6 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         paint_gridLine.setColor(Color.DKGRAY);
         paint_gridLine.setStyle(Paint.Style.STROKE);
         paint_gridLine.setStrokeWidth(1);
-
-        pixelOnColor = getResources().getColor(R.color.CAView_PixelOn);
-        pixelOffColor = getResources().getColor(R.color.CAView_PixelOff);
-
 
     }
 
@@ -120,7 +98,10 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
 
                     }
-                    Thread.sleep(16); // so we can interact in a reasonable time
+                    Thread.sleep(1); // so we can interact in a reasonable time
+                    if(2>3){
+                        throw new InterruptedException("bark bark");
+                    }
 
 
                 } catch (InterruptedException e) {
@@ -156,22 +137,12 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             int tileSize = tileProvider.getTileSize();
             Bitmap bmp = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565);
 
-//            int[] bmpData = new int[tileSize * tileSize];
-
             Iterator<Tile> tilesIter = tileProvider.getActiveTilesIter();
             while (tilesIter.hasNext()) {
 
                 Tile t = tilesIter.next();
 
                 if (t.state != null) {
-
-//                    for (int row = 0; row < tileSize; row++) {
-//                        int rowOffset = row * tileSize;
-//                        for (int col = 0; col < tileSize; col++) {
-//                            bmpData[rowOffset + col] = t.state[row][col] ? Color.GREEN : Color.BLACK;
-//                        }
-//                    }
-
                     bmp.setPixels(t.state, 0, tileSize, 0, 0, tileSize, tileSize);
                     canvas.drawBitmap(bmp, t.x, t.y, null);
                 } else {
@@ -237,4 +208,18 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         }
     }
 
+
+    public interface TileProvider {
+
+        public void onSurfaceChange(int newWidthPx, int newHeightPx);
+
+        public int getTileSize();
+
+        public Iterator<Tile> getActiveTilesIter();
+
+        public boolean hasStaleTiles();
+
+        public void updateNextStale();
+
+    }
 }
