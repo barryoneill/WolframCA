@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
+import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.ca.view.TiledBitmapView;
-import net.nologin.meep.ca.view.WolframCAView;
 
 
 public class MainActivity extends Activity {
@@ -35,8 +35,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
 
-
-
+                Utils.logD("prev onclick");
 
             }
         });

@@ -1,18 +1,20 @@
 package net.nologin.meep.ca.view;
 
 import android.graphics.*;
-import android.view.SurfaceHolder;
+import android.view.*;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.SurfaceView;
 import net.nologin.meep.ca.model.Tile;
 import net.nologin.meep.ca.model.WolframTileProvider;
+import net.nologin.meep.ca.util.Utils;
 
 import java.util.Iterator;
 
 
 public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
 
+    GestureDetector gestureDetector;
+    ScaleGestureDetector scaleDetector;
 
     Paint paint_bg;
     Paint paint_msgText;
@@ -23,6 +25,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
     int height;
 
     TileProvider tileProvider;
+
+    private float mScaleFactor = 0.5f;
 
     public TiledBitmapView(Context context, AttributeSet attrs) {
 
@@ -53,6 +57,9 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         paint_gridLine.setColor(Color.DKGRAY);
         paint_gridLine.setStyle(Paint.Style.STROKE);
         paint_gridLine.setStrokeWidth(1);
+
+        gestureDetector = new GestureDetector(new GestureListener());
+        scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
     }
 
@@ -154,7 +161,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         }
 
-        String msg = width + "x" + height;
+        String msg = width + "x" + height + " s=" + mScaleFactor;
         canvas.drawText(msg, width / 2, height / 2, paint_msgText);
 
         canvas.restore();
@@ -207,6 +214,88 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             }
         }
     }
+
+
+    @Override // register GD
+    public boolean onTouchEvent(MotionEvent me) {
+
+        invalidate();
+
+        gestureDetector.onTouchEvent(me);
+        scaleDetector.onTouchEvent(me);
+
+        return true;
+    }
+
+
+    // http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
+    class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+            Utils.logD("Scale factor now " + mScaleFactor);
+
+            invalidate();
+            return true;
+        }
+    }
+
+
+    class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public void onShowPress(MotionEvent motionEvent) {
+
+            Utils.logD("show press");
+
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float distanceX, float distanceY) {
+
+            Utils.logD("scroll");
+
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent motionEvent) {
+
+            Utils.logD("long press");
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+
+            Utils.logD("fling");
+
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+
+            Utils.logD("double tap");
+
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+
+            Utils.logD("single tap");
+
+            return false;
+        }
+
+    }
+
 
 
     public interface TileProvider {
