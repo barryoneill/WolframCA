@@ -13,27 +13,15 @@ public class Tile {
     public Rect rect;
     public boolean fresh;
 
-    Random r = new Random();
+        Random r = new Random();
 
-    public Tile(int x, int y, int size) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        rect = new Rect(x,y,x+size,y+size);
-    }
+        public Tile(int x, int y, int size) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            rect = new Rect(x,y,x+size,y+size);
+        }
 
-    public void populateCARule(int colorOnPixel, int colorOffPixel, int ruleNo) {
-
-        WCAModel model = new WCAModel(ruleNo, 50);
-
-        int NUM_ROWS = size;
-        int NUM_COLS = size;
-
-        // bitmap = Bitmap.createBitmap(NUM_ROWS, NUM_COLS, Bitmap.Config.RGB_565);
-
-        int[] bmpData = new int[NUM_ROWS * NUM_COLS];
-
-    }
 
     public void populateRandom(int colorOnPixel, int colorOffPixel) {
 

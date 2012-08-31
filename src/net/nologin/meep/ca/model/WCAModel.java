@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class WCAModel {
 
+    @Deprecated
     private boolean[][] GRID;
     private boolean[] ruleLookup;
     private int rule;
