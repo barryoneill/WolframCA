@@ -4,7 +4,6 @@ import android.content.Context;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
-import java.security.PublicKey;
 import java.util.*;
 
 public class WolframTileProvider implements TiledBitmapView.TileProvider {
@@ -15,10 +14,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     List<Tile> tiles;
     int staleCnt = 0;
     int ruleNo = 0;
-    Random r = new Random();
-
-    @Deprecated
-    int[] initVal;
 
     private int PIXEL_ON, PIXEL_OFF;
 
@@ -30,9 +25,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
 
 
-        initVal = new int[256];
-        Arrays.fill(initVal,PIXEL_OFF);
-        initVal[initVal.length/2] = PIXEL_ON;
+
     }
 
 
@@ -77,29 +70,29 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             int rowOffset = row * TILE_SIZE;
             int prevRowOffset = (row-1) * TILE_SIZE;
 
-            for (int col = 0; col < TILE_SIZE; col++) {
+            if(row == 0){
 
-                boolean a,b,c;
-                if(row == 0){
+                Arrays.fill(t.state,rowOffset,TILE_SIZE, PIXEL_OFF);
+                t.state[rowOffset + TILE_SIZE/2] = PIXEL_ON;
+            }
+            else {
 
+                for (int col = 0; col < TILE_SIZE; col++) {
 
-                    a = col != 0 && initVal[col-1] != PIXEL_OFF;
-                    b = initVal[col] == PIXEL_OFF;
-                    c = col < initVal.length -1 && initVal[col+1] != PIXEL_OFF;
-                }
-                else{
+                    boolean a,b,c;
 
                     a = col != 0 && t.state[prevRowOffset + col-1] != PIXEL_OFF;
                     b = t.state[prevRowOffset + col] == PIXEL_OFF;
                     c = col < TILE_SIZE -1 && t.state[prevRowOffset + col+1] != PIXEL_OFF;
+
+
+                    boolean on = WolframRuleTable.checkRule(ruleNo,a,b,c);
+
+                    t.state[rowOffset+col] = on ? PIXEL_ON : PIXEL_OFF;
+
                 }
 
-                boolean on = WolframRuleTable.checkRule(ruleNo,a,b,c);
-
-                t.state[rowOffset+col] = on ? PIXEL_ON : PIXEL_OFF;
-
             }
-
         }
 
         staleCnt--;

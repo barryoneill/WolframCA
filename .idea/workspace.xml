@@ -27,16 +27,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bc2da6c2-44b9-47ab-a60f-1ccecc7860b0" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/Pingly.iml" afterPath="$PROJECT_DIR$/../Pingly/Pingly.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/findbugs-idea.xml" afterPath="$PROJECT_DIR$/.idea/findbugs-idea.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/res/layout/main.xml" afterPath="$PROJECT_DIR$/res/layout/main.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/util/Utils.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/util/Utils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
     </list>
     <ignored path="WolframCA.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -116,34 +110,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="WolframTileProvider.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="WolframTileProvider.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="53" column="1" selection-start="1338" selection-end="1338" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Utils.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/util/Utils.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="34" selection-start="366" selection-end="366" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MainActivity.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="50" column="4" selection-start="1411" selection-end="1411" vertical-scroll-proportion="1.4534883">
+            <state line="104" column="26" selection-start="2423" selection-end="2423" vertical-scroll-proportion="0.6458685">
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#1038#1186#0" expanded="true" />
-                <element signature="e#1175#1176#0" expanded="true" />
-                <element signature="e#1247#1395#0" expanded="true" />
-                <element signature="e#1384#1385#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -185,8 +157,8 @@
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
         <option value="$PROJECT_DIR$/res/layout/main.xml" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" />
-        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" />
+        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
       </list>
     </option>
   </component>
@@ -695,7 +667,11 @@
       <created>1346385765393</created>
       <updated>1346385765393</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="more for the evening">
+      <created>1346466101325</created>
+      <updated>1346466101325</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -735,14 +711,14 @@
       <window_info id="FindBugs-IDEA" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32924107" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32924107" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3939732" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Android" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3939732" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32924107" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.21875" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24906467" sideWeight="0.60602677" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24906467" sideWeight="0.69196427" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959914" sideWeight="0.6707589" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3080357" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3080357" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Android Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32924107" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
@@ -786,7 +762,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="add gesture listening skeleton stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="more for the evening" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -807,6 +783,7 @@
     <MESSAGE value="FINE, Tile object will have to contain pixel data for performance sake" />
     <MESSAGE value="wahey, initial render of a pattern in each tile.  long way to go yet" />
     <MESSAGE value="add gesture listening skeleton stuff" />
+    <MESSAGE value="more for the evening" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -849,13 +826,6 @@
     <entry file="jar://D:/dev/android-sdk-windows/platforms/android-10/android.jar!/android/view/SurfaceHolder.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="14" column="40" selection-start="461" selection-end="461" vertical-scroll-proportion="0.3288364" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/util/Utils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="34" selection-start="366" selection-end="366" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
       </provider>
     </entry>
     <entry file="jar://D:/dev/android-sdk-windows/platforms/android-10/android.jar!/android/graphics/Canvas.class">
@@ -904,22 +874,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="1" selection-start="1338" selection-end="1338" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="4" selection-start="1411" selection-end="1411" vertical-scroll-proportion="1.4534883">
+        <state line="14" column="38" selection-start="387" selection-end="387" vertical-scroll-proportion="0.3604651">
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#1038#1186#0" expanded="true" />
             <element signature="e#1175#1176#0" expanded="true" />
             <element signature="e#1247#1395#0" expanded="true" />
             <element signature="e#1384#1385#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/util/Utils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="34" selection-start="273" selection-end="273" vertical-scroll-proportion="0.29069766">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="104" column="26" selection-start="2423" selection-end="2423" vertical-scroll-proportion="0.6458685">
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
