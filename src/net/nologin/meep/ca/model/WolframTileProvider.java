@@ -4,6 +4,7 @@ import android.content.Context;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
+import java.security.PublicKey;
 import java.util.*;
 
 public class WolframTileProvider implements TiledBitmapView.TileProvider {
@@ -49,6 +50,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         staleCnt = tiles.size();
     }
+
 
     @Override
     public int getTileSize(){

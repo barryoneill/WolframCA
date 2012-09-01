@@ -6,10 +6,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import net.nologin.meep.ca.model.Tile;
 import net.nologin.meep.ca.model.WolframTileProvider;
-import net.nologin.meep.ca.util.Utils;
+import static net.nologin.meep.ca.util.Utils.log;
 
 import java.util.Iterator;
-
 
 public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -26,7 +25,10 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
     TileProvider tileProvider;
 
+    Bitmap bitmap;
+
     private float mScaleFactor = 0.5f;
+    private int mOffsetX = 0, mOffsetY = 0;
 
     public TiledBitmapView(Context context, AttributeSet attrs) {
 
@@ -42,7 +44,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         // background paint
         paint_bg = new Paint();
-        paint_bg.setColor(Color.LTGRAY);
+        paint_bg.setColor(Color.DKGRAY); // LTGRAY
         paint_bg.setStyle(Paint.Style.FILL);
 
         // background status text paint (needed?)
@@ -54,12 +56,15 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         // grid line
         paint_gridLine = new Paint();
-        paint_gridLine.setColor(Color.DKGRAY);
+        paint_gridLine.setColor(Color.LTGRAY); // DKGRAY
         paint_gridLine.setStyle(Paint.Style.STROKE);
         paint_gridLine.setStrokeWidth(1);
 
         gestureDetector = new GestureDetector(new GestureListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
+
+        bitmap = null;
+
 
     }
 
@@ -79,6 +84,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             this.running = running;
         }
 
+
+
         @Override
         public void run() {
 
@@ -89,23 +96,21 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
                 try {
                     c = holder.lockCanvas(null);
+                    if(c == null){
+                        continue; // is this right?
+                    }
                     synchronized (holder) {
 
                         if(tileProvider.hasStaleTiles()){
                             // render another tile
                             tileProvider.updateNextStale();
                         }
-                        else{
-                            // nothing to do, end thread
-                            running = false;
 
-                        }
-
-                        view.onDraw(c);
+                        view.doDraw(c);
 
 
                     }
-                    Thread.sleep(1); // so we can interact in a reasonable time
+                    Thread.sleep(5); // so we can interact in a reasonable time
                     if(2>3){
                         throw new InterruptedException("bark bark");
                     }
@@ -129,8 +134,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
     }
 
 
-    @Override
-    public void onDraw(Canvas canvas) {
+    public void doDraw(Canvas canvas) {
 
         super.onDraw(canvas);
 
@@ -139,43 +143,46 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         // draw BG
         canvas.drawRect(new Rect(0, 0, width, height), paint_bg);
 
-        if (tileProvider != null) {
+        if (tileProvider != null && bitmap != null) {
 
             int tileSize = tileProvider.getTileSize();
-            Bitmap bmp = Bitmap.createBitmap(tileSize, tileSize, Bitmap.Config.RGB_565);
+
+            int xOff = 0;
+            int yOff = 0;
 
             Iterator<Tile> tilesIter = tileProvider.getActiveTilesIter();
             while (tilesIter.hasNext()) {
 
                 Tile t = tilesIter.next();
-
                 if (t.state != null) {
-                    bmp.setPixels(t.state, 0, tileSize, 0, 0, tileSize, tileSize);
-                    canvas.drawBitmap(bmp, t.x, t.y, null);
+
+                    bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
+                    xOff = xOff + tileSize;
+                    if(xOff >= tileSize * 3){
+                        xOff = 0;
+                    }
+
                 } else {
                     canvas.drawRect(t.rect, paint_gridLine);
                 }
 
             }
 
+            canvas.drawBitmap(bitmap, mOffsetX, mOffsetY, null);
+
 
         }
 
-        String msg = width + "x" + height + " s=" + mScaleFactor;
-        canvas.drawText(msg, width / 2, height / 2, paint_msgText);
+        String fmt1 = "%dx%d, s=%1.3f";
+        String fmt2 = "offset %d,%d";
+        String msg1 = String.format(fmt1,width,height,mScaleFactor);
+        String msg2 = String.format(fmt2,mOffsetX, mOffsetY);
+        canvas.drawText(msg1, width / 2, height / 2, paint_msgText);
+        canvas.drawText(msg2, width / 2, height / 2 + 35, paint_msgText);
 
         canvas.restore();
 
     }
-
-
-    @Override
-    public void invalidate() {
-
-        super.invalidate();
-
-    }
-
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -186,6 +193,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         if (tileProvider != null) {
             tileProvider.onSurfaceChange(width, height);
         }
+
+        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 
     }
 
@@ -238,9 +247,9 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             // Don't let the object get too small or too large.
             mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
 
-            Utils.logD("Scale factor now " + mScaleFactor);
+            log("Scale factor now " + mScaleFactor + " - " + tgThread.running);
 
-            invalidate();
+
             return true;
         }
     }
@@ -251,14 +260,16 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         @Override
         public void onShowPress(MotionEvent motionEvent) {
 
-            Utils.logD("show press");
+            log("show press");
 
         }
 
         @Override
         public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float distanceX, float distanceY) {
 
-            Utils.logD("scroll");
+            log("scroll x=" + distanceX + ", y=" + distanceY);
+            mOffsetX -= (int)distanceX;
+            mOffsetY -= (int)distanceY;
 
             return true;
         }
@@ -266,14 +277,14 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         @Override
         public void onLongPress(MotionEvent motionEvent) {
 
-            Utils.logD("long press");
+            log("long press");
 
         }
 
         @Override
         public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
 
-            Utils.logD("fling");
+            log("fling");
 
             return true;
         }
@@ -281,7 +292,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         @Override
         public boolean onDoubleTap(MotionEvent e) {
 
-            Utils.logD("double tap");
+            log("double tap");
 
             return true;
         }
@@ -289,14 +300,12 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
 
-            Utils.logD("single tap");
+            log("single tap");
 
             return false;
         }
 
     }
-
-
 
     public interface TileProvider {
 

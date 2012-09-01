@@ -29,7 +29,7 @@
 
     </LinearLayout>
 
-    <net.nologin.meep.ca.view.TiledBitmapView
+    <net.nologin.meep.ca.view.WolframCAView
             android:id="@+id/caView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"/>

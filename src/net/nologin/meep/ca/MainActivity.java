@@ -4,9 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
-import net.nologin.meep.ca.util.Utils;
-import net.nologin.meep.ca.view.TiledBitmapView;
-
+import net.nologin.meep.ca.view.WolframCAView;
+import static net.nologin.meep.ca.util.Utils.log;
 
 public class MainActivity extends Activity {
 
@@ -22,24 +21,26 @@ public class MainActivity extends Activity {
             list[i] = "CA Rule " + i;
         }
 
-        final TiledBitmapView tbv = (TiledBitmapView)findViewById(R.id.caView);
+        final WolframCAView tbv = (WolframCAView)findViewById(R.id.caView);
         final Spinner spinner = (Spinner) findViewById(R.id.caSpinner);
 
         ArrayAdapter<String> caValueAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
         caValueAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(caValueAdapter);
 
-
-        final ImageButton caRulePrevBut = (ImageButton) findViewById(R.id.caRulePrev);
-        caRulePrevBut.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.caRulePrev).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Utils.logD("prev onclick");
-
+                log("prev");
             }
         });
 
+        findViewById(R.id.caRuleNext).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                log("next");
+            }
+        });
 
 
 
