@@ -159,8 +159,10 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
                     //bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
                     canvas.drawBitmap(t.state,mOffsetX + xOff,mOffsetY + yOff,null);
                     xOff = xOff + tileSize;
-                    if(xOff >= tileSize * 3){
+                    if(xOff == tileSize * 4){
+                        yOff += tileSize;
                         xOff = 0;
+
                     }
 
                 } else {

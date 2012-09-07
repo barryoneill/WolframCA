@@ -101,7 +101,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         staleCnt--;
     }
 
-
     @Override
     public Iterator<Tile> getActiveTilesIter() {
 
