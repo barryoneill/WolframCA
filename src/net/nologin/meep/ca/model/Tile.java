@@ -6,7 +6,8 @@ import java.util.Random;
 
 public class Tile {
 
-    public int[] state;
+    // public int[] state;
+    public Bitmap state;
     public int x;
     public int y;
     public int size;

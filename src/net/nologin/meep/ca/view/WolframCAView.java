@@ -7,6 +7,7 @@ public class WolframCAView extends TiledBitmapView {
 
     public WolframCAView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
     }
 
 

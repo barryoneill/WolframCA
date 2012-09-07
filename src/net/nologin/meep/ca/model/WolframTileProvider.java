@@ -1,6 +1,7 @@
 package net.nologin.meep.ca.model;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
@@ -62,8 +63,8 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         Tile t = tiles.get(staleCnt-1);
 
-
-        t.state = new int[TILE_SIZE*TILE_SIZE];
+        t.state = Bitmap.createBitmap(TILE_SIZE,TILE_SIZE, Bitmap.Config.RGB_565);
+        int[] data = new int[TILE_SIZE*TILE_SIZE];
 
         for (int row = 0; row < TILE_SIZE; row++) {
 
@@ -72,8 +73,8 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
             if(row == 0){
 
-                Arrays.fill(t.state,rowOffset,TILE_SIZE, PIXEL_OFF);
-                t.state[rowOffset + TILE_SIZE/2] = PIXEL_ON;
+                Arrays.fill(data,rowOffset,TILE_SIZE, PIXEL_OFF);
+                data[rowOffset + TILE_SIZE/2] = PIXEL_ON;
             }
             else {
 
@@ -81,19 +82,21 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
                     boolean a,b,c;
 
-                    a = col != 0 && t.state[prevRowOffset + col-1] != PIXEL_OFF;
-                    b = t.state[prevRowOffset + col] == PIXEL_OFF;
-                    c = col < TILE_SIZE -1 && t.state[prevRowOffset + col+1] != PIXEL_OFF;
+                    a = col != 0 && data[prevRowOffset + col-1] != PIXEL_OFF;
+                    b = data[prevRowOffset + col] == PIXEL_OFF;
+                    c = col < TILE_SIZE -1 && data[prevRowOffset + col+1] != PIXEL_OFF;
 
 
                     boolean on = WolframRuleTable.checkRule(ruleNo,a,b,c);
 
-                    t.state[rowOffset+col] = on ? PIXEL_ON : PIXEL_OFF;
+                    data[rowOffset+col] = on ? PIXEL_ON : PIXEL_OFF;
 
                 }
 
             }
         }
+
+        t.state.setPixels(data,0,TILE_SIZE,0,0,TILE_SIZE,TILE_SIZE);
 
         staleCnt--;
     }

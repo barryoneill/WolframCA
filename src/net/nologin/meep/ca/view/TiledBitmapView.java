@@ -25,7 +25,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
     TileProvider tileProvider;
 
-    Bitmap bitmap;
+    //Bitmap bitmap;
 
     private float mScaleFactor = 0.5f;
     private int mOffsetX = 0, mOffsetY = 0;
@@ -63,7 +63,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         gestureDetector = new GestureDetector(new GestureListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
-        bitmap = null;
+        //bitmap = null;
 
 
     }
@@ -143,7 +143,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         // draw BG
         canvas.drawRect(new Rect(0, 0, width, height), paint_bg);
 
-        if (tileProvider != null && bitmap != null) {
+        if (tileProvider != null) {
 
             int tileSize = tileProvider.getTileSize();
 
@@ -156,7 +156,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
                 Tile t = tilesIter.next();
                 if (t.state != null) {
 
-                    bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
+                    //bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
+                    canvas.drawBitmap(t.state,mOffsetX + xOff,mOffsetY + yOff,null);
                     xOff = xOff + tileSize;
                     if(xOff >= tileSize * 3){
                         xOff = 0;
@@ -168,7 +169,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
             }
 
-            canvas.drawBitmap(bitmap, mOffsetX, mOffsetY, null);
+            //canvas.drawBitmap(bitmap, mOffsetX, mOffsetY, null);
 
 
         }
@@ -194,7 +195,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             tileProvider.onSurfaceChange(width, height);
         }
 
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        // bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 
     }
 

@@ -5,7 +5,7 @@
           android:versionName="1.0"
         >
     <uses-sdk android:minSdkVersion="10"/>
-    <application android:label="@string/app_name" android:theme="@style/WolframCATheme"    >
+    <application android:label="@string/app_name" android:theme="@style/WolframCATheme"     >
         <activity android:name=".MainActivity"
                   android:label="@string/app_name"
                 >
