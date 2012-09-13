@@ -3,6 +3,7 @@ package net.nologin.meep.ca.model;
 import android.content.Context;
 import android.graphics.Bitmap;
 import net.nologin.meep.ca.R;
+import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.ca.view.TiledBitmapView;
 
 import java.util.*;
@@ -12,14 +13,13 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     public static final int TILE_SIZE = 256;
 
     private Context ctx;
-    List<Tile> tiles;
-    int staleCnt = 0;
+    Set<Tile> tiles;
     int ruleNo = 0;
 
     private int PIXEL_ON, PIXEL_OFF;
 
     public WolframTileProvider(Context ctx, int ruleNo){
-        tiles = new ArrayList<Tile>();
+        tiles = new HashSet<Tile>();
         this.ruleNo = ruleNo;
 
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
@@ -33,16 +33,9 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     @Override
     public void onSurfaceChange(int width, int height) {
 
-        int NUM_HORIZ = width / TILE_SIZE + 1;
-        int NUM_VERT = height / TILE_SIZE + 1;
+            // TODO: needed?
 
-        for (int row = 0; row < NUM_HORIZ; row++) {
-            for (int col = 0; col < NUM_VERT; col++) {
-                tiles.add(new Tile(row * TILE_SIZE, col * TILE_SIZE, TILE_SIZE));
-            }
-        }
 
-        staleCnt = tiles.size();
     }
 
 
@@ -52,7 +45,17 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
+    @Override
+    public Tile getTile(int x, int y){
 
+        // Utils.log("Asked for : " + x + "," + y);
+
+        return new Tile(TILE_SIZE);
+
+    }
+
+
+    /*
     @Override
     public boolean hasStaleTiles() {
         return staleCnt > 0;
@@ -108,6 +111,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         return tiles.iterator();
 
     }
+    */
 
 
 

@@ -20,8 +20,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
     Paint paint_gridLine;
 
     TileGenerationThread tgThread;
-    int width;
-    int height;
+
+    ScreenState state;
 
     TileProvider tileProvider;
 
@@ -35,8 +35,9 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         super(context, attrs);
 
         SurfaceHolder holder = getHolder();
-
         holder.addCallback(this);
+
+        state = new ScreenState();
         tgThread = new TileGenerationThread(holder, this);
 
         // TODO: register tileProvider
@@ -62,8 +63,6 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         gestureDetector = new GestureDetector(new GestureListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
-
-        //bitmap = null;
 
 
     }
@@ -101,10 +100,13 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
                     }
                     synchronized (holder) {
 
-                        if(tileProvider.hasStaleTiles()){
-                            // render another tile
-                            tileProvider.updateNextStale();
-                        }
+
+
+                        // TODO:
+//                        if(tileProvider.hasStaleTiles()){
+//                            // render another tile
+//                            tileProvider.updateNextStale();
+//                        }
 
                         view.doDraw(c);
 
@@ -141,35 +143,48 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         canvas.save();
 
         // draw BG
-        canvas.drawRect(new Rect(0, 0, width, height), paint_bg);
+        canvas.drawRect(new Rect(0, 0, state.width, state.height), paint_bg);
 
         if (tileProvider != null) {
 
-            int tileSize = tileProvider.getTileSize();
+            for(int tilePosX=state.minX;tilePosX<state.maxX;tilePosX++){
 
-            int xOff = 0;
-            int yOff = 0;
+                for(int tilePosY=state.minY;tilePosY<state.maxY;tilePosY++){
 
-            Iterator<Tile> tilesIter = tileProvider.getActiveTilesIter();
-            while (tilesIter.hasNext()) {
+                    int size = tileProvider.getTileSize();
+                    int x = tilePosX * size + mOffsetX;
+                    int y = tilePosY * size + mOffsetY;
 
-                Tile t = tilesIter.next();
-                if (t.state != null) {
 
-                    //bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
-                    canvas.drawBitmap(t.state,mOffsetX + xOff,mOffsetY + yOff,null);
-                    xOff = xOff + tileSize;
-                    if(xOff == tileSize * 4){
-                        yOff += tileSize;
-                        xOff = 0;
+                    Tile t = tileProvider.getTile(tilePosX,tilePosY);
+                    if(t == null){
+                        continue; // TODO: log?
+                    }
+
+                    if (t.state != null) {
+
+                        //bitmap.setPixels(t.state, 0, tileSize, xOff, yOff, tileSize, tileSize);
+                        canvas.drawBitmap(t.state,x ,y ,null);
+
+                    } else {
+                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
+
+                        String fmt1 = "Tile(%d,%d)";
+                        String msg1 = String.format(fmt1, tilePosX, tilePosY);
+                        canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
+
 
                     }
 
-                } else {
-                    canvas.drawRect(t.rect, paint_gridLine);
+
                 }
 
             }
+
+
+
+
+
 
             //canvas.drawBitmap(bitmap, mOffsetX, mOffsetY, null);
 
@@ -178,10 +193,10 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         String fmt1 = "%dx%d, s=%1.3f";
         String fmt2 = "offset %d,%d";
-        String msg1 = String.format(fmt1,width,height,mScaleFactor);
+        String msg1 = String.format(fmt1, state.width, state.height,mScaleFactor);
         String msg2 = String.format(fmt2,mOffsetX, mOffsetY);
-        canvas.drawText(msg1, width / 2, height / 2, paint_msgText);
-        canvas.drawText(msg2, width / 2, height / 2 + 35, paint_msgText);
+        canvas.drawText(msg1, state.width / 2, state.height / 2, paint_msgText);
+        canvas.drawText(msg2, state.width / 2, state.height / 2 + 35, paint_msgText);
 
         canvas.restore();
 
@@ -190,8 +205,16 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
-        this.width = width;
-        this.height = height;
+        state.width = width;
+        state.height = height;
+
+        int NUM_HORIZ = width / tileProvider.getTileSize() + 1;
+        int NUM_VERT = height / tileProvider.getTileSize() + 1;
+
+
+        state.maxX = NUM_HORIZ;
+        state.maxY = NUM_VERT;
+
 
         if (tileProvider != null) {
             tileProvider.onSurfaceChange(width, height);
@@ -239,6 +262,15 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         return true;
     }
 
+
+    class ScreenState {
+
+        int height;
+        int width;
+
+        int minX = 0, maxX = 0, minY = 0, maxY;
+
+    }
 
     // http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
     class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -316,11 +348,17 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
         public int getTileSize();
 
+        public Tile getTile(int x, int y);
+
+
+
+        /*
         public Iterator<Tile> getActiveTilesIter();
 
         public boolean hasStaleTiles();
 
         public void updateNextStale();
+        */
 
     }
 }
