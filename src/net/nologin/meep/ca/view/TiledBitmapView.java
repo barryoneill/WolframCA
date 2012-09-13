@@ -149,7 +149,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
             for(int tilePosX=state.minX;tilePosX<state.maxX;tilePosX++){
 
-                for(int tilePosY=state.minY;tilePosY<state.maxY;tilePosY++){
+                for(int tilePosY=state.maxY;tilePosY>=state.minY;tilePosY--){
 
                     int size = tileProvider.getTileSize();
                     int x = tilePosX * size + mOffsetX;
@@ -305,6 +305,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
             log("scroll x=" + distanceX + ", y=" + distanceY);
             mOffsetX -= (int)distanceX;
             mOffsetY -= (int)distanceY;
+
+
 
             return true;
         }
