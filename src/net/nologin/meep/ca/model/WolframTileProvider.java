@@ -30,17 +30,12 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
 
-
-
     }
 
 
     @Override
     public void onSurfaceChange(int width, int height) {
-
             // TODO: needed?
-
-
     }
 
 

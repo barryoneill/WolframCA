@@ -2,6 +2,7 @@ package net.nologin.meep.ca.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import net.nologin.meep.ca.model.WolframTileProvider;
 
 public class WolframCAView extends TiledBitmapView {
 
@@ -10,5 +11,10 @@ public class WolframCAView extends TiledBitmapView {
 
     }
 
+    public TileProvider getTileProvider(){
+
+        return new WolframTileProvider(getContext(),90);
+
+    }
 
 }

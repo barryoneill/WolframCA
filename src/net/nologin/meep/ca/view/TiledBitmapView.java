@@ -8,7 +8,7 @@ import net.nologin.meep.ca.model.Tile;
 import net.nologin.meep.ca.model.WolframTileProvider;
 import static net.nologin.meep.ca.util.Utils.log;
 
-public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
+public abstract class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
 
     GestureDetector gestureDetector;
     ScaleGestureDetector scaleDetector;
@@ -39,8 +39,7 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         state = new ScreenState();
         tgThread = new TileGenerationThread(holder, this);
 
-        // TODO: register tileProvider
-        tileProvider = new WolframTileProvider(context,90);
+        tileProvider = getTileProvider();
 
         // background paint
         paint_bg = new Paint();
@@ -72,6 +71,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
 
 
     }
+
+
 
 
     class TileGenerationThread extends Thread {
@@ -367,6 +368,8 @@ public class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callba
         }
 
     }
+
+    public abstract TileProvider getTileProvider();
 
     public interface TileProvider {
 
