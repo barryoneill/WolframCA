@@ -56,7 +56,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         paint_debugBG.setStyle(Paint.Style.FILL);
         paint_debugBG.setAlpha(140);
 
-
         // grid line
         paint_gridLine = new Paint();
         paint_gridLine.setColor(Color.LTGRAY); // DKGRAY
@@ -231,9 +230,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.width = width;
         state.height = height;
 
-        // TOOD: how many of a buffer?
-        int horz_tiles = width / tileProvider.getTileSize();
-        int vert_tiles = height / tileProvider.getTileSize();
+        // TODO: how many of a buffer?
+        int horz_tiles = width / tileProvider.getTileSize() + 5;
+        int vert_tiles = height / tileProvider.getTileSize() + 5;
 
         state.maxX = horz_tiles;
         state.maxY = vert_tiles;
@@ -244,13 +243,11 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.maxX = horz_tiles - half; // in case of odd number
 
         // offset the canvas so the 0,0 tile is centered horizontally
-        mOffsetX = half * tileProvider.getTileSize();
+        mOffsetX = (width - tileProvider.getTileSize()) / 2;
 
         if (tileProvider != null) {
             tileProvider.onSurfaceChange(width, height);
         }
-
-        // bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 
     }
 
