@@ -30,10 +30,8 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/Pingly.iml" afterPath="$PROJECT_DIR$/../Pingly/Pingly.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" />
     </list>
     <ignored path="WolframCA.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -91,19 +89,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="WolframCAView.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="0" selection-start="439" selection-end="439" vertical-scroll-proportion="0.37942666">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TiledBitmapView.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="TiledBitmapView.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="31" selection-start="601" selection-end="601" vertical-scroll-proportion="0.0">
+            <state line="82" column="74" selection-start="2401" selection-end="2401" vertical-scroll-proportion="0.5699831">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -114,7 +103,7 @@
       <file leaf-file-name="MainActivity.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="50" selection-start="1533" selection-end="1533" vertical-scroll-proportion="0.0">
+            <state line="43" column="42" selection-start="1509" selection-end="1509" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#1699#2030#0" expanded="true" />
                 <element signature="e#2019#2020#0" expanded="true" />
@@ -128,7 +117,7 @@
       <file leaf-file-name="WolframTileProvider.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="55" column="26" selection-start="1578" selection-end="1578" vertical-scroll-proportion="0.0">
+            <state line="230" column="34" selection-start="6289" selection-end="6289" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -161,10 +150,10 @@
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/TmpTest.java" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTile.java" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/Tile.java" />
-        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java" />
-        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
         <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" />
+        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
+        <option value="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
       </list>
     </option>
   </component>
@@ -586,7 +575,7 @@
     <property name="GoToClass.includeJavaFiles" value="false" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
-    <property name="AndroidTargetDevices" value="C8F13BCE75AE59E" />
+    <property name="AndroidTargetDevices" value="HT063PL07163" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
     <property name="dynamic.classpath" value="false" />
@@ -905,7 +894,11 @@
       <created>1347656684122</created>
       <updated>1347656684122</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="changing of rule supported">
+      <created>1347658787444</created>
+      <updated>1347658787444</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -996,7 +989,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="add a bunch of extra initial tiles, fix offset calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="changing of rule supported" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1028,6 +1021,7 @@
     <MESSAGE value="proper provider reg" />
     <MESSAGE value="Somewhat working, but rule calculation needs to take into account non-rendered dependencies.. :/" />
     <MESSAGE value="add a bunch of extra initial tiles, fix offset calculation" />
+    <MESSAGE value="changing of rule supported" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1105,9 +1099,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="33" selection-start="249" selection-end="665" vertical-scroll-proportion="0.70826304">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="50" selection-start="1533" selection-end="1533" vertical-scroll-proportion="0.0">
+        <state line="43" column="42" selection-start="1509" selection-end="1509" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#1699#2030#0" expanded="true" />
             <element signature="e#2019#2020#0" expanded="true" />
@@ -1117,28 +1118,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="31" selection-start="601" selection-end="601" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="26" selection-start="1578" selection-end="1578" vertical-scroll-proportion="0.0">
+        <state line="230" column="34" selection-start="6289" selection-end="6289" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java">
+    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="0" selection-start="439" selection-end="439" vertical-scroll-proportion="0.37942666">
-          <folding />
+        <state line="82" column="74" selection-start="2401" selection-end="2401" vertical-scroll-proportion="0.5699831">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

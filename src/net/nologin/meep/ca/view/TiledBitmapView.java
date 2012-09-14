@@ -68,7 +68,32 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
     }
 
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
+        state.width = width;
+        state.height = height;
+
+        // TODO: how many of a buffer?
+        int horz_tiles = width / tileProvider.getTileSize() + 2;
+        int vert_tiles = height / tileProvider.getTileSize() + 2;
+
+        state.maxX = horz_tiles;
+        state.maxY = vert_tiles;
+
+        // offset halfway across horizontal
+        int half = horz_tiles / 2;
+        state.minX -= half;
+        state.maxX = horz_tiles - half; // in case of odd number
+
+        // offset the canvas so the 0,0 tile is centered horizontally
+        mOffsetX = (width - tileProvider.getTileSize()) / 2;
+
+        if (tileProvider != null) {
+            tileProvider.onSurfaceChange(width, height);
+        }
+
+    }
 
 
     class TileGenerationThread extends Thread {
@@ -168,7 +193,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                         canvas.drawBitmap(t.bitmap,x ,y ,null);
 
                         // TODO: remove or make debug dependent
-                        //canvas.drawRect(t.getRect(x,y), paint_gridLine);
+                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
 
                     } else {
 
@@ -210,6 +235,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         String msg1 = String.format(fmt1, state.width, state.height,mScaleFactor);
         String msg2 = String.format(fmt2,mOffsetX, mOffsetY);
         String msg3 =  String.format(fmt3,state.minX,state.minY,state.maxX,state.maxY);
+        String msg4 = tileProvider.toString();
 
         float boxWidth = 300, boxHeight = 120;
 
@@ -219,37 +245,13 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         canvas.drawRect(debug_x, debug_y, state.width, state.height, paint_debugBG);
 
         canvas.drawText(msg1, debug_x + boxWidth / 2, debug_y + 30, paint_msgText);
-        canvas.drawText(msg2, debug_x + boxWidth / 2, debug_y + 60, paint_msgText);
-        canvas.drawText(msg3, debug_x + boxWidth / 2, debug_y + 90, paint_msgText);
+        canvas.drawText(msg2, debug_x + boxWidth / 2, debug_y + 55, paint_msgText);
+        canvas.drawText(msg3, debug_x + boxWidth / 2, debug_y + 80, paint_msgText);
+        canvas.drawText(msg4, debug_x + boxWidth / 2, debug_y + 105, paint_msgText);
 
     }
 
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
-        state.width = width;
-        state.height = height;
-
-        // TODO: how many of a buffer?
-        int horz_tiles = width / tileProvider.getTileSize() + 5;
-        int vert_tiles = height / tileProvider.getTileSize() + 5;
-
-        state.maxX = horz_tiles;
-        state.maxY = vert_tiles;
-
-        // offset halfway across horizontal
-        int half = horz_tiles / 2;
-        state.minX -= half;
-        state.maxX = horz_tiles - half; // in case of odd number
-
-        // offset the canvas so the 0,0 tile is centered horizontally
-        mOffsetX = (width - tileProvider.getTileSize()) / 2;
-
-        if (tileProvider != null) {
-            tileProvider.onSurfaceChange(width, height);
-        }
-
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {

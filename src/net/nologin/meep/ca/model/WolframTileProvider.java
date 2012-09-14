@@ -225,6 +225,10 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
+    @Override
+    public String toString(){
+        return String.format("prov[r=%d,c=%d,q=%d]",ruleNo,tileCache.size(),renderQueue.size());
+    }
 
 
 }
