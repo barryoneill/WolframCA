@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import net.nologin.meep.ca.R;
+import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.ca.view.TiledBitmapView;
 import static net.nologin.meep.ca.util.Utils.log;
 
@@ -42,6 +43,19 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     }
 
+
+    public void changeRule(int newRule) {
+
+        if(newRule < 0 || newRule > 255){
+            Utils.log("Rule not in range 0-255: " + newRule);
+            return;
+        }
+
+        ruleNo  = newRule;
+        tileCache = new HashMap<String,WolframTile>();
+        renderQueue = new PriorityQueue<WolframTile>();
+
+    }
 
     @Override
     public void onSurfaceChange(int width, int height) {
