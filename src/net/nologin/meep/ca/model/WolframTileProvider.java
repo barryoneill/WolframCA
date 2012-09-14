@@ -13,13 +13,18 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     public static final int TILE_SIZE = 256;
 
     private Context ctx;
-    Set<Tile> tiles;
+    HashMap<String,Tile> tileCache;
     int ruleNo = 0;
+
+    Queue<Tile> renderQueue;
 
     private int PIXEL_ON, PIXEL_OFF;
 
     public WolframTileProvider(Context ctx, int ruleNo){
-        tiles = new HashSet<Tile>();
+
+        tileCache = new HashMap<String,Tile>();
+        renderQueue = new PriorityQueue<Tile>();
+
         this.ruleNo = ruleNo;
 
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
@@ -46,27 +51,48 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
 
     @Override
-    public Tile getTile(int x, int y){
+    public Tile getTile(int xId, int yId){
 
-        // Utils.log("Asked for : " + x + "," + y);
+        String cacheKey = getCacheKey(xId, yId);
 
-        return new Tile(TILE_SIZE);
+        // cache check
+        Tile t = tileCache.get(cacheKey);
+        if(t != null){
+            return t;
+        }
+
+        // cache miss, new tile
+        t = new Tile(xId,yId,TILE_SIZE);
+        tileCache.put(cacheKey,t);
+
+        // to be rendered later in another thread
+        renderQueue.add(t);
+
+        return t;
+
+    }
+
+    private String getCacheKey(int x, int y){
+
+        return String.format("%d,%d",x,y);
 
     }
 
 
-    /*
     @Override
-    public boolean hasStaleTiles() {
-        return staleCnt > 0;
-    }
+    public void renderNext() {
 
-    @Override
-    public void updateNextStale() {
+        if(renderQueue.isEmpty()){
+            return;
+        }
 
-        Tile t = tiles.get(staleCnt-1);
+        Tile t = renderQueue.poll();
 
-        t.state = Bitmap.createBitmap(TILE_SIZE,TILE_SIZE, Bitmap.Config.RGB_565);
+        Utils.log("*** Rendering " + t);
+
+
+        t.bitmap = Bitmap.createBitmap(TILE_SIZE, TILE_SIZE, Bitmap.Config.RGB_565);
+
         int[] data = new int[TILE_SIZE*TILE_SIZE];
 
         for (int row = 0; row < TILE_SIZE; row++) {
@@ -99,19 +125,13 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             }
         }
 
-        t.state.setPixels(data,0,TILE_SIZE,0,0,TILE_SIZE,TILE_SIZE);
-
-        staleCnt--;
-    }
-
-    @Override
-    public Iterator<Tile> getActiveTilesIter() {
-
-        // TODO: revisit
-        return tiles.iterator();
+        t.bitmap.setPixels(data,0,TILE_SIZE,0,0,TILE_SIZE,TILE_SIZE);
 
     }
-    */
+
+
+
+
 
 
 
