@@ -5,7 +5,6 @@ import android.view.*;
 import android.content.Context;
 import android.util.AttributeSet;
 import net.nologin.meep.ca.model.Tile;
-import net.nologin.meep.ca.model.WolframTileProvider;
 import static net.nologin.meep.ca.util.Utils.log;
 
 public abstract class TiledBitmapView extends SurfaceView implements SurfaceHolder.Callback {
@@ -23,8 +22,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
     ScreenState state;
 
     TileProvider tileProvider;
-
-    //Bitmap bitmap;
 
     private float mScaleFactor = 0.5f;
     private int mOffsetX = 0, mOffsetY = 0;
@@ -109,9 +106,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                     }
                     synchronized (holder) {
 
-                        tileProvider.renderNext();
-
                         view.doDraw(c);
+
+                        tileProvider.renderNext();
 
 
                     }
@@ -166,7 +163,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                         continue;
                     }
 
-                    if (t.bitmap != null) {
+                    if (t.renderFinished()) {
 
                         //bitmap.setPixels(t.bitmap, 0, tileSize, xOff, yOff, tileSize, tileSize);
                         canvas.drawBitmap(t.bitmap,x ,y ,null);
@@ -234,12 +231,20 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.width = width;
         state.height = height;
 
-        int horz_tiles = width / tileProvider.getTileSize() + 1;
-        int vert_tiles = height / tileProvider.getTileSize() + 1;
+        // TOOD: how many of a buffer?
+        int horz_tiles = width / tileProvider.getTileSize();
+        int vert_tiles = height / tileProvider.getTileSize();
 
         state.maxX = horz_tiles;
         state.maxY = vert_tiles;
 
+        // offset halfway across horizontal
+        int half = horz_tiles / 2;
+        state.minX -= half;
+        state.maxX = horz_tiles - half; // in case of odd number
+
+        // offset the canvas so the 0,0 tile is centered horizontally
+        mOffsetX = half * tileProvider.getTileSize();
 
         if (tileProvider != null) {
             tileProvider.onSurfaceChange(width, height);

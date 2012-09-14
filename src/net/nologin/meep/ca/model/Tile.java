@@ -2,7 +2,10 @@ package net.nologin.meep.ca.model;
 
 import android.graphics.*;
 
+
 public class Tile implements Comparable<Tile> {
+
+    public int renderOrder;
 
     public int size;
     public int xId;
@@ -17,8 +20,20 @@ public class Tile implements Comparable<Tile> {
         bitmap = null;
     }
 
-    public Rect getRect(int atX, int atY){
-        return new Rect(atX, atY, atX + size, atY + size);
+    public boolean isOrigin(){
+        return xId == 0 && yId ==0;
+    }
+
+    public boolean hasId(int xId, int yId){
+        return this.xId == xId && this.yId == yId;
+    }
+
+    public Rect getRect(int canvasX, int canvasY){
+        return new Rect(canvasX, canvasY, canvasX + size, canvasY + size);
+    }
+
+    public boolean renderFinished(){
+        return bitmap != null;
     }
 
     public String toString() {
@@ -27,32 +42,10 @@ public class Tile implements Comparable<Tile> {
 
     }
 
-//        @Override
-//        public boolean equals(Object o) {
-//
-//            if (this == o){
-//                return true;
-//            }
-//
-//            if (!(o instanceof TileID)){
-//                return false;
-//            }
-//
-//            TileID b = (TileID)o;
-//            return x == b.x && y == b.y;
-//        }
-//
-//        public int hashCode() {
-//
-//            int hc = 17;
-//            hc = 31 * hc + x;
-//            hc = 31 * hc + y;
-//            return hc;
-//        }
-
-
     @Override
     public int compareTo(Tile tile) {
-       return 0; // TODO: investigate render queue ordering - this just does 'as added'
+        // TODO: investigate render queue ordering - this just does 'as added'
+       return 0;
     }
+
 }
