@@ -168,6 +168,10 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         canvas.save();
 
+        // the offsets may change during draw, use a copy, otherwise there'll be flickering/tearing of tiles!
+        int mofX = mOffsetX;
+        int mofY = mOffsetY;
+
         // draw BG
         canvas.drawRect(new Rect(0, 0, state.width, state.height), paint_bg);
 
@@ -178,8 +182,8 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                 for(int tilePosY=state.minY;tilePosY<=state.maxY;tilePosY++){
 
                     int size = tileProvider.getTileSize();
-                    int x = tilePosX * size + mOffsetX;
-                    int y = tilePosY * size + mOffsetY;
+                    int x = tilePosX * size + mofX;
+                    int y = tilePosY * size + mofY;
 
 
                     Tile t = tileProvider.getTile(tilePosX,tilePosY);
