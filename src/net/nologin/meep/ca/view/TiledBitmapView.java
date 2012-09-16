@@ -193,7 +193,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                         canvas.drawBitmap(t.bitmap,x ,y ,null);
 
                         // TODO: remove or make debug dependent
-                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
+                        // canvas.drawRect(t.getRect(x,y), paint_gridLine);
 
                     } else {
 

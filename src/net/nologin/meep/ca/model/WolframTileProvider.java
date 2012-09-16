@@ -25,6 +25,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     private Paint paint_tileDebugTxt;
 
+
     public WolframTileProvider(Context ctx, int ruleNo){
 
         tileCache = new HashMap<Integer,WolframTile>();
@@ -54,6 +55,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         ruleNo  = newRule;
         tileCache = new HashMap<Integer,WolframTile>();
         renderQueue = new PriorityQueue<WolframTile>();
+        renderOrderCnt = 1;
 
     }
 
@@ -117,7 +119,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         renderQueue.remove();
 
 
-
         log("*** Rendering " + t + ", (queue size=" + renderQueue.size()+")");
 
         int tsize = getTileSize();
@@ -142,16 +143,15 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
      */
     private boolean addPrerequisites(WolframTile t){
 
-        int curY = t.yId-1;   // start one row up
-        int curXMin = t.xId-1, curXMax = t.xId+1;  // scan from y-1 to y+1 of that parent row
-
-
-        if(curY <= 0){  // top row doesn't have prerequisites
+        if(t.yId <= 0){  // top row doesn't have prerequisites
             return false;
         }
 
-        // keep looping up to the top row (x=0) of our model until we're satisfied all dependencies are met
-        while(curY > 0){
+        int curY = t.yId-1;   // start one row up
+        int curXMin = t.xId-1, curXMax = t.xId+1;  // scan from y-1 to y+1 of that parent row
+
+        // keep looping up to the top row (y=0) of our model until we're satisfied all dependencies are met
+        while(curY >= 0){
 
             boolean foundMissing = false;
 
@@ -181,107 +181,88 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     private void renderRuleData(WolframTile t){
 
-        int tsize = getTileSize();
+        int TSIZE = getTileSize();
 
-
-
-        WolframTile above = tileCache.get(getCacheKey(t.xId,t.yId-1));
-        WolframTile left = tileCache.get(getCacheKey(t.xId-1,t.yId));
-        WolframTile right = tileCache.get(getCacheKey(t.xId+1,t.yId));
-
-        boolean[] aboveState = above != null ? above.bot : WolframTile.CA_EMPTY_STATE;
-        boolean[] leftState = left != null ? left.right : WolframTile.CA_EMPTY_STATE;
-        boolean[] rightState = right != null ? right.left : WolframTile.CA_EMPTY_STATE;
-
-        // we need to calculate the state of the first row (t.top) before calling renderPreppedTile
-        if(t.isOrigin()){
-            // origin starts off with our hardcoded one-pixel-in-the-middle state
-            t.top = WolframTile.CA_START_STATE;
+        boolean[] stateTL, stateT, stateTR;
+        if(t.yId == 0){
+            stateTL = WolframTile.CA_EMPTY_STATE;
+            stateT = WolframTile.CA_EMPTY_STATE;
+            stateTR = WolframTile.CA_EMPTY_STATE;
         }
-        else {
-            // otherwise, we base it on the neighbours
-            WolframTile aboveLeft = tileCache.get(getCacheKey(t.xId-1,t.yId-1));
-            WolframTile aboveRight = tileCache.get(getCacheKey(t.xId-1,t.yId-1));
-
-            boolean prevLeft = aboveLeft != null && aboveLeft.bot[tsize - 1];
-            boolean prevRight = aboveRight != null && aboveRight.bot[0];
-
-            t.top = calculateNextRowState(prevLeft, aboveState, prevRight);
-
+        else{
+            stateTL = getRequiredBottomState(t.xId-1,t.yId-1);
+            stateT = getRequiredBottomState(t.xId, t.yId - 1);
+            stateTR = getRequiredBottomState(t.xId + 1, t.yId - 1);
         }
 
-        // init the bitmap, and pixel data array
-        t.bitmap = Bitmap.createBitmap(tsize,tsize, Bitmap.Config.RGB_565);
 
-        int[] data = new int[tsize*tsize];
 
-        paintRow(data,0,t.top);
-        t.left[0] = t.top[0];
-        t.right[0] = t.top[tsize-1];
+        int[] bmpData = new int[TSIZE*TSIZE];
 
-        boolean[] prevRowState = t.top;
 
-        for (int row = 1; row < tsize; row++) {
+        boolean[] prevState = new boolean[TSIZE * 3];
+        boolean[] newState = new boolean[prevState.length];
+        System.arraycopy(stateTL,0,prevState,0,TSIZE);
+        System.arraycopy(stateT,0,prevState,TSIZE,TSIZE);
+        System.arraycopy(stateTR,0,prevState,TSIZE*2,TSIZE);
 
-            boolean[] rowState = calculateNextRowState(leftState[row-1],prevRowState, rightState[row-1]);
-            paintRow(data,row,rowState);
+        int leftPtr = 1, rightPtr = prevState.length-2;
 
-            if(row == tsize-1){
-                t.bot = rowState;
+        for (int row = 0; row < TSIZE; row++) {
+
+            // update 'newState' for the current row
+            if(row == 0 && t.yId == 0 && (t.xId == -1 || t.xId == 0 || t.xId == 1)){
+                newState[newState.length/2 - (t.xId * TSIZE)] = true;
+            }
+            else {
+                for(int col = leftPtr; col < rightPtr; col++){
+                    newState[col] = WolframRuleTable.checkRule(ruleNo,prevState[col-1],prevState[col],prevState[col+1]);
+                }
             }
 
-            t.left[row] = rowState[0];
-            t.right[row] = rowState[tsize-1];
+            // populate the 'bmpData' segment for this tile
+            int rowOffset = row * TSIZE;
+            for(int col=TSIZE;col<TSIZE*2;col++){
+                int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
+                bmpData[rowOffset+col-TSIZE] = val;
+            }
 
-            prevRowState = rowState;
+            // save the state of the bottom row
+            if(row == TSIZE-1){
+                 System.arraycopy(newState,TSIZE,t.bot,0,TSIZE);
+            }
+
+            System.arraycopy(newState,0,prevState,0,prevState.length);
+            //prevState = newState;
 
         }
 
-        t.bitmap.setPixels(data,0,tsize,0,0,tsize,tsize);
+        t.bitmap = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
+        t.bitmap.setPixels(bmpData,0,TSIZE,0,0,TSIZE,TSIZE);
 
         t.renderOrder = renderOrderCnt++;
 
 
     }
 
-
-    private boolean[] calculateNextRowState(boolean prevLeft, boolean[] prev, boolean prevRight){
-
-        boolean[] next = new boolean[prev.length];
-
-        for(int col = 0; col < prev.length; col++){
-
-            if(col == 0){
-                // leftmost elem, include 'prevLeft'
-                next[col] = WolframRuleTable.checkRule(ruleNo,prevLeft,prev[col],prev[col+1]);
-            }
-            else if(col == prev.length-1){
-                // rightmost elem, include 'prevRight'
-                next[col] = WolframRuleTable.checkRule(ruleNo,prev[col-1],prev[col],prevRight);
-            }
-            else{
-                // non-perimeter elem, prev has all we need
-                next[col] = WolframRuleTable.checkRule(ruleNo,prev[col-1],prev[col],prev[col+1]);
-            }
-
+    private boolean[] getRequiredBottomState(int xId, int yId){
+        WolframTile tile = tileCache.get(getCacheKey(xId,yId));
+        if(tile == null){
+            throw new IllegalStateException("Required tile (" + xId + "," + yId + ") not in cache");
         }
-
-
-        return next;
+        if(!tile.renderFinished()){ // TODO (maybe not render required, but state)
+            throw new IllegalStateException("Required tile (" + xId + "," + yId + ") not rendered yet");
+        }
+        return tile.bot;
     }
 
-    private void paintRow(int data[], int row, boolean[] state){
 
-        int rowOffset = row * state.length;
-        for(int col=0;col<state.length;col++){
-            data[rowOffset+col] = state[col] ? PIXEL_ON : PIXEL_OFF;
-        }
-    }
+
 
 
     @Override
     public String toString(){
-        return String.format("prov[r=%d,c=%d,q=%d]",ruleNo,tileCache.size(),renderQueue.size());
+        return String.format("[rule=%d,c=%d,q=%d]",ruleNo,tileCache.size(),renderQueue.size());
     }
 
 

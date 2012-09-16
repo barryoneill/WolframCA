@@ -22,14 +22,14 @@ public class WolframTile extends Tile {
      * if/when the cells are scrolled back into view.
      *
      * if memory starts being a problem, consider using BitSet instead (at the cost of CPU overhead) */
-    boolean[] top,left,right,bot;
+    boolean[] top,bot; // left,right
 
     public WolframTile(int xId, int yId) {
         super(xId, yId, TILE_SIZE);
 
         top = new boolean[size];
-        left = new boolean[size];
-        right = new boolean[size];
+//        left = new boolean[size];
+//        right = new boolean[size];
         bot = new boolean[size];
 
     }
