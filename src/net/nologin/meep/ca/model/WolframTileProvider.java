@@ -14,7 +14,7 @@ import java.util.*;
 
 public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
-    private HashMap<String,WolframTile> tileCache;
+    private HashMap<Integer,WolframTile> tileCache;
     private int ruleNo = 0;
 
     private Queue<WolframTile> renderQueue;
@@ -27,7 +27,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     public WolframTileProvider(Context ctx, int ruleNo){
 
-        tileCache = new HashMap<String,WolframTile>();
+        tileCache = new HashMap<Integer,WolframTile>();
         renderQueue = new PriorityQueue<WolframTile>();
 
         this.ruleNo = ruleNo;
@@ -52,7 +52,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         }
 
         ruleNo  = newRule;
-        tileCache = new HashMap<String,WolframTile>();
+        tileCache = new HashMap<Integer,WolframTile>();
         renderQueue = new PriorityQueue<WolframTile>();
 
     }
@@ -72,7 +72,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     @Override
     public Tile getTile(int xId, int yId){
 
-        String cacheKey = getCacheKey(xId, yId);
+        int cacheKey = getCacheKey(xId, yId);
 
         // cache check
         WolframTile t = tileCache.get(cacheKey);
@@ -91,9 +91,9 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     }
 
-    private String getCacheKey(int x, int y){
+    private int getCacheKey(int x, int y){
 
-        return String.format("%d,%d",x,y);
+        return x << 16 ^ y;
 
     }
 
@@ -105,7 +105,18 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             return;
         }
 
-        WolframTile t = renderQueue.poll();
+        // take next off queue.  If that has non-calculated prereqs, add them to the model
+        //WolframTile t = renderQueue.poll();
+
+        WolframTile t;
+        do {
+            t = renderQueue.peek();
+        }
+        while(addPrerequisites(t));
+
+        renderQueue.remove();
+
+
 
         log("*** Rendering " + t + ", (queue size=" + renderQueue.size()+")");
 
@@ -120,16 +131,59 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
+    /*
+     * As well as needing the tile above to be completed, each row of a tile is dependent on its neighbour's
+     * touching boundary to be complete too.  If we required left and right to be complete before calculating,
+     * we'd run into an infinite loop (left needs left needs left.. etc).  Instead, given we know the top of
+     * the model is a row of blanks, we just require that the above left/above/right tiles be completed (resulting
+     * in an inverse triangle of dependencies).  We then calculate the left and right boundaries on the fly (we don't
+     * need to calculate the whole neighbour tile, just enough to populate the touching boundary - which only requires
+     * the top row of the neighbour - avoiding the infinite loop).
+     */
+    private boolean addPrerequisites(WolframTile t){
+
+        int curY = t.yId-1;   // start one row up
+        int curXMin = t.xId-1, curXMax = t.xId+1;  // scan from y-1 to y+1 of that parent row
+
+
+        if(curY <= 0){  // top row doesn't have prerequisites
+            return false;
+        }
+
+        // keep looping up to the top row (x=0) of our model until we're satisfied all dependencies are met
+        while(curY > 0){
+
+            boolean foundMissing = false;
+
+            for(int x=curXMin; x <= curXMax; x++){
+
+                // add all missing prereqs to the queue
+                Tile preReq = getTile(x,curY); // a 'get' adds any non-existing tile to the model & render queue
+                if(!preReq.renderFinished()){
+                    foundMissing = true;
+                }
+            }
+
+            if(!foundMissing){ // no missing prereq tiles were found, we can stop looking
+                return false;
+            }
+
+            // move up a row, expand left and right by one
+            curXMin--;
+            curXMax++;
+            curY--;
+
+        }
+
+        return true; // t had prerequisites which were added
+
+    }
+
     private void renderRuleData(WolframTile t){
 
         int tsize = getTileSize();
 
 
-        if(t.hasId(-1,0)){
-
-            log("wahey");    // debug point
-
-        }
 
         WolframTile above = tileCache.get(getCacheKey(t.xId,t.yId-1));
         WolframTile left = tileCache.get(getCacheKey(t.xId-1,t.yId));
