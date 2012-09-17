@@ -74,20 +74,21 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.width = width;
         state.height = height;
 
-        resetCanvasOffset();
-
         int SCROLL_BUFFER = 1;
 
         // we need enough to cover the whole width (hence the ceil), + 1 for scroll buffer
         state.visible_tiles_w = (int)Math.ceil(width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
         state.visible_tiles_h = (int)Math.ceil(height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
 
+        resetCanvasOffset();
     }
 
     protected void resetCanvasOffset(){
-        // if there are an even number of visible tiles, offset to the left a tile so the 'origin' gets centered
-        state.canvasOffsetX = state.visible_tiles_w % 2 != 0 ? 0 : -tileProvider.getTileSize();
+
+        // in the case of an odd number of horizontal tiles, we need an offset to move the origin to the middle
+        state.canvasOffsetX = state.visible_tiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
         state.canvasOffsetY = 0;
+
     }
 
     private Rect getVisibleTileIds(int offsetX, int offsetY){
@@ -195,10 +196,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
             for(List<Tile> tileRow : visibleGrid){
 
-                int x = moffX % size;
-                if(x!=0){
-                    x -= size;
-                }
+                int x = moffX % size - size; // start with one left
 
                 for(Tile t : tileRow){
 

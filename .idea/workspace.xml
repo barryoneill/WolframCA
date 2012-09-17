@@ -30,10 +30,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../Pingly/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../Pingly/Pingly.iml" afterPath="$PROJECT_DIR$/../Pingly/Pingly.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/Tile.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/Tile.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" afterPath="$PROJECT_DIR$/src/net/nologin/meep/ca/view/WolframCAView.java" />
     </list>
     <ignored path="WolframCA.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -91,10 +88,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="WolframTileProvider.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="WolframTileProvider.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="108" column="32" selection-start="2677" selection-end="2677" vertical-scroll-proportion="-2.920742">
+            <state line="156" column="22" selection-start="4267" selection-end="4267" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#2377#2389#0" expanded="true" />
@@ -122,10 +119,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TiledBitmapView.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="TiledBitmapView.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="398" column="28" selection-start="10989" selection-end="10989" vertical-scroll-proportion="0.0">
+            <state line="5" column="33" selection-start="150" selection-end="150" vertical-scroll-proportion="0.12647554">
               <folding />
             </state>
           </provider>
@@ -952,7 +949,11 @@
       <created>1347831291187</created>
       <updated>1347831291187</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="initial work at getting an initial window over data">
+      <created>1347841890328</created>
+      <updated>1347841890328</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -996,7 +997,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24906467" sideWeight="0.69196427" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3080357" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3080357" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959914" sideWeight="0.6707589" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1043,7 +1044,7 @@
     <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix tearing/splitting of tiles during scroll" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial work at getting an initial window over data" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1080,6 +1081,7 @@
     <MESSAGE value="prerequisite calcuation" />
     <MESSAGE value="wahey, it lives!" />
     <MESSAGE value="fix tearing/splitting of tiles during scroll" />
+    <MESSAGE value="initial work at getting an initial window over data" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1171,21 +1173,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="398" column="28" selection-start="10989" selection-end="10989" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/model/WolframTileProvider.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="108" column="32" selection-start="2677" selection-end="2677" vertical-scroll-proportion="-2.920742">
+        <state line="156" column="22" selection-start="4267" selection-end="4267" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#2377#2389#0" expanded="true" />
             <element signature="e#2508#2514#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/net/nologin/meep/ca/view/TiledBitmapView.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="33" selection-start="150" selection-end="150" vertical-scroll-proportion="0.12647554">
+          <folding />
         </state>
       </provider>
     </entry>
