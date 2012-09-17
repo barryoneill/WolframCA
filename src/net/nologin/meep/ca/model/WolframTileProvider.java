@@ -1,10 +1,7 @@
 package net.nologin.meep.ca.model;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.*;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.ca.view.TiledBitmapView;
@@ -60,16 +57,16 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
     @Override
-    public void onSurfaceChange(int width, int height) {
-            // TODO: needed?
-    }
-
-
-    @Override
     public int getTileSize(){
         return WolframTile.TILE_SIZE;
     }
 
+    @Override
+    public Rect getTileIndexBounds() {
+
+        return new Rect(-20,0,20,20);
+
+    }
 
     @Override
     public Tile getTile(int xId, int yId){
@@ -99,6 +96,21 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     }
 
+    public List<List<Tile>> getTilesForCurrent(Rect tileIdRange) {
+
+        List<List<Tile>> result = new ArrayList<List<Tile>>();
+
+        for(int y = tileIdRange.top; y <= tileIdRange.bottom; y++){
+
+            List<Tile> curRow = new ArrayList<Tile>();
+            for(int x = tileIdRange.left; x <= tileIdRange.right; x++){
+                curRow.add(getTile(x,y));
+            }
+            result.add(curRow);
+        }
+
+        return result;
+    }
 
     @Override
     public void renderNext() {
@@ -159,7 +171,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
                 // add all missing prereqs to the queue
                 Tile preReq = getTile(x,curY); // a 'get' adds any non-existing tile to the model & render queue
-                if(!preReq.renderFinished()){
+                if(!preReq.rendered()){
                     foundMissing = true;
                 }
             }
@@ -250,7 +262,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         if(tile == null){
             throw new IllegalStateException("Required tile (" + xId + "," + yId + ") not in cache");
         }
-        if(!tile.renderFinished()){ // TODO (maybe not render required, but state)
+        if(!tile.rendered()){ // TODO (maybe not render required, but state)
             throw new IllegalStateException("Required tile (" + xId + "," + yId + ") not rendered yet");
         }
         return tile.bot;

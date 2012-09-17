@@ -32,8 +32,12 @@ public class Tile implements Comparable<Tile> {
         return new Rect(canvasX, canvasY, canvasX + size, canvasY + size);
     }
 
-    public boolean renderFinished(){
+    public boolean rendered(){
         return bitmap != null;
+    }
+
+    public void notifyOffScreen(){
+        bitmap = null;
     }
 
     public String toString() {

@@ -28,6 +28,8 @@ public class WolframCAView extends TiledBitmapView {
 
         provider.changeRule(newRule);
 
+        resetCanvasOffset();
+
     }
 
 }
