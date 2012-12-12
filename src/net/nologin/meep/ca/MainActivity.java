@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 log("Got item id " + id + " at position " + position);
-                caView.changeRule(RULES[position]);
+                caView.setupForRule(RULES[position]);
             }
 
             @Override

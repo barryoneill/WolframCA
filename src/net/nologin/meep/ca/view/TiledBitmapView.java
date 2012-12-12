@@ -38,8 +38,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state = new ScreenState();
         tgThread = new TileGenerationThread(holder, this);
 
-        tileProvider = getTileProvider();
-
         // background paint
         paint_bg = new Paint();
         paint_bg.setColor(Color.DKGRAY); // LTGRAY
@@ -73,22 +71,35 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
     }
 
+    protected void setTileProvider(TileProvider tileProvider){
+        this.tileProvider = tileProvider;
+    }
+
+    protected TileProvider getTileProvider(){
+        return this.tileProvider;
+    }
+
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
         state.width = width;
         state.height = height;
 
-        int SCROLL_BUFFER = 1;
-
-        // we need enough to cover the whole width (hence the ceil), + 1 for scroll buffer
-        state.visible_tiles_w = (int)Math.ceil(width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
-        state.visible_tiles_h = (int)Math.ceil(height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
-
         resetCanvasOffset();
     }
 
     protected void resetCanvasOffset(){
+
+        if(tileProvider == null){
+            return;
+        }
+
+        int SCROLL_BUFFER = 1;
+
+        // we need enough to cover the whole width (hence the ceil), + 1 for scroll buffer
+        state.visible_tiles_w = (int)Math.ceil(state.width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
+        state.visible_tiles_h = (int)Math.ceil(state.height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
+
 
         // in the case of an odd number of horizontal tiles, we need an offset to move the origin to the middle
         state.canvasOffsetX = state.visible_tiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
@@ -143,7 +154,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                 try {
                     c = holder.lockCanvas(null);
-                    if(c == null){
+                    if(c == null || tileProvider == null){
                         continue; // is this right?
                     }
                     synchronized (holder) {
@@ -228,9 +239,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                 y += size; // move down one tile width
             }
-        }
 
-        drawDebugBox(canvas);
+            drawDebugBox(canvas);
+        }
 
         canvas.restore();
 
@@ -393,8 +404,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         }
 
     }
-
-    public abstract TileProvider getTileProvider();
 
     public interface TileProvider {
 

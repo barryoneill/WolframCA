@@ -7,26 +7,24 @@ import net.nologin.meep.ca.util.Utils;
 
 public class WolframCAView extends TiledBitmapView {
 
-    private WolframTileProvider provider;
-
     public WolframCAView(Context context, AttributeSet attrs) {
 
         super(context, attrs);
 
     }
 
-    public TileProvider getTileProvider(){
+    public void setupForRule(int newRule){
 
-        if(provider == null){
-            provider = new WolframTileProvider(getContext(),90);
+        WolframTileProvider tp = (WolframTileProvider)getTileProvider();
+
+        if(tp == null){
+            Utils.log("Init new provider, rule = " + newRule);
+            setTileProvider(new WolframTileProvider(getContext(),newRule));
         }
-        return provider;
-
-    }
-
-    public void changeRule(int newRule){
-
-        provider.changeRule(newRule);
+        else {
+            Utils.log("Changing rule, rule = " + newRule);
+            tp.changeRule(newRule);
+        }
 
         resetCanvasOffset();
 
