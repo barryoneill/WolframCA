@@ -113,7 +113,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
     @Override
-    public void renderNext() {
+    public void generateNextTile() {
 
         if(renderQueue.isEmpty()){
             return;
@@ -135,7 +135,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         int tsize = getTileSize();
 
-        renderRuleData(t);
+        generateBmpForTile(t);
 
         // do some debug
         Canvas c = new Canvas(t.bitmap);
@@ -149,7 +149,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
      * touching boundary to be complete too.  If we required left and right to be complete before calculating,
      * we'd run into an infinite loop (left needs left needs left.. etc).  Instead, given we know the top of
      * the model is a row of blanks, we just require that the above left/above/right tiles be completed (resulting
-     * in an inverse triangle of dependencies).  We then calculate the left and right boundaries on the fly (we don't
+     * in an inverted triangle of dependent tiles).  We then calculate the left and right boundaries on the fly (we don't
      * need to calculate the whole neighbour tile, just enough to populate the touching boundary - which only requires
      * the top row of the neighbour - avoiding the infinite loop).
      */
@@ -187,14 +187,15 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         }
 
-        return true; // t had prerequisites which were added
+        return true; // true == t had prerequisites which were added
 
     }
 
-    private void renderRuleData(WolframTile t){
+    private void generateBmpForTile(WolframTile t){
 
         int TSIZE = getTileSize();
 
+        // to build a tile, we need to know the state of the bottom row of the three tiles above
         boolean[] stateTL, stateT, stateTR;
         if(t.yId == 0){
             stateTL = WolframTile.CA_EMPTY_STATE;
@@ -202,15 +203,12 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             stateTR = WolframTile.CA_EMPTY_STATE;
         }
         else{
-            stateTL = getRequiredBottomState(t.xId-1,t.yId-1);
-            stateT = getRequiredBottomState(t.xId, t.yId - 1);
-            stateTR = getRequiredBottomState(t.xId + 1, t.yId - 1);
+            stateTL = getBottomStateFromPrereqTile(t.xId - 1, t.yId - 1);
+            stateT = getBottomStateFromPrereqTile(t.xId, t.yId - 1);
+            stateTR = getBottomStateFromPrereqTile(t.xId + 1, t.yId - 1);
         }
 
-
-
         int[] bmpData = new int[TSIZE*TSIZE];
-
 
         boolean[] prevState = new boolean[TSIZE * 3];
         boolean[] newState = new boolean[prevState.length];
@@ -245,8 +243,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             }
 
             System.arraycopy(newState,0,prevState,0,prevState.length);
-            //prevState = newState;
-
         }
 
         t.bitmap = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
@@ -257,7 +253,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     }
 
-    private boolean[] getRequiredBottomState(int xId, int yId){
+    private boolean[] getBottomStateFromPrereqTile(int xId, int yId){
         WolframTile tile = tileCache.get(getCacheKey(xId,yId));
         if(tile == null){
             throw new IllegalStateException("Required tile (" + xId + "," + yId + ") not in cache");
@@ -267,10 +263,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         }
         return tile.bot;
     }
-
-
-
-
 
     @Override
     public String toString(){

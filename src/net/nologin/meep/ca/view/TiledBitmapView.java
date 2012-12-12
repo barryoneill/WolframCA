@@ -97,12 +97,12 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         int SCROLL_BUFFER = 1;
 
         // we need enough to cover the whole width (hence the ceil), + 1 for scroll buffer
-        state.visible_tiles_w = (int)Math.ceil(state.width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
-        state.visible_tiles_h = (int)Math.ceil(state.height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
+        state.numVisibleTiles_w = (int)Math.ceil(state.width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
+        state.numVisibleTiles_h = (int)Math.ceil(state.height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
 
 
         // in the case of an odd number of horizontal tiles, we need an offset to move the origin to the middle
-        state.canvasOffsetX = state.visible_tiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
+        state.canvasOffsetX = state.numVisibleTiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
         state.canvasOffsetY = 0;
 
     }
@@ -110,15 +110,15 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
     private Rect getVisibleTileIds(int offsetX, int offsetY){
 
         // put the tiles either side of the axis
-        int left = - (state.visible_tiles_w - (state.visible_tiles_w/2)); // int rounding puts possible larger on right
+        int left = - (state.numVisibleTiles_w - (state.numVisibleTiles_w /2)); // int rounding puts possible larger on right
         // then apply offset
         left -= offsetX/tileProvider.getTileSize();
 
         // all tiles on one side of y axis
         int top = 0 - offsetY/tileProvider.getTileSize();
 
-        int bottom = top + state.visible_tiles_h;
-        int right = left + state.visible_tiles_w;
+        int bottom = top + state.numVisibleTiles_h;
+        int right = left + state.numVisibleTiles_w;
 
         return new Rect(left,top,right,bottom);
 
@@ -161,7 +161,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                         view.doDraw(c);
 
-                        tileProvider.renderNext();
+                        tileProvider.generateNextTile();
 
 
                     }
@@ -182,7 +182,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
             }
 
         }
-
 
     }
 
@@ -260,7 +259,6 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         String msgMemory = Utils.getMemStatus();
         Paint paintMem = Utils.isHeapAlmostFull() ? paint_errText : paint_msgText;
 
-        // float boxWidth = 300, boxHeight = 120;
         float boxWidth = 330, boxHeight = 145;
 
         float debug_x = state.width - boxWidth;
@@ -322,7 +320,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         int width, height;
 
-        int visible_tiles_w, visible_tiles_h;
+        int numVisibleTiles_w, numVisibleTiles_h;
 
         float scaleFactor = 0.5f;
 
@@ -411,7 +409,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         public Tile getTile(int x, int y);
 
-        public void renderNext();
+        public void generateNextTile();
 
         public Rect getTileIndexBounds();
 
