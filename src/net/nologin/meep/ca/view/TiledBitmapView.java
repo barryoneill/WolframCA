@@ -5,6 +5,7 @@ import android.view.*;
 import android.content.Context;
 import android.util.AttributeSet;
 import net.nologin.meep.ca.model.Tile;
+import net.nologin.meep.ca.util.Utils;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
     Paint paint_bg;
     Paint paint_msgText;
+    Paint paint_errText;
     Paint paint_gridLine;
     Paint paint_debugBG;
 
@@ -49,6 +51,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         paint_msgText.setTextSize(20);
         paint_msgText.setAntiAlias(true);
         paint_msgText.setTextAlign(Paint.Align.CENTER);
+
+        paint_errText = new Paint(paint_msgText);
+        paint_errText.setColor(Color.RED);
 
         // background paint
         paint_debugBG = new Paint();
@@ -177,7 +182,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         canvas.save();
 
-        // the offsets may change during draw, use a copy, otherwise there'll be flickering/tearing of tiles!
+        // the offsets may change during doDraw; Use a copy, otherwise there'll be flickering/tearing of tiles!
         int moffX = state.canvasOffsetX;
         int moffY = state.canvasOffsetY;
 
@@ -218,10 +223,10 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                     }
 
-                    x += size;
+                    x += size; // move right one tile width
                 }
 
-                y += size;
+                y += size; // move down one tile width
             }
         }
 
@@ -237,22 +242,27 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         String fmt1 = "%dx%d, s=%1.3f";
         String fmt2 = "offset x=%d y=%d";
         String fmt3 = "tiles %s";
-        String msg1 = String.format(fmt1, state.width, state.height,state.scaleFactor);
-        String msg2 = String.format(fmt2,state.canvasOffsetX,state.canvasOffsetY);
-        String msg3 = String.format(fmt3,getVisibleTileIds(state.canvasOffsetX,state.canvasOffsetY));
-        String msg4 = tileProvider.toString();
+        String msgResAndScale = String.format(fmt1, state.width, state.height,state.scaleFactor);
+        String msgOffset = String.format(fmt2,state.canvasOffsetX,state.canvasOffsetY);
+        String msgVisibleIds = String.format(fmt3,getVisibleTileIds(state.canvasOffsetX,state.canvasOffsetY));
+        String msgProvider = tileProvider.toString();
+        String msgMemory = Utils.getMemStatus();
+        Paint paintMem = Utils.isHeapAlmostFull() ? paint_errText : paint_msgText;
 
-        float boxWidth = 300, boxHeight = 120;
+        // float boxWidth = 300, boxHeight = 120;
+        float boxWidth = 330, boxHeight = 145;
 
         float debug_x = state.width - boxWidth;
         float debug_y = state.height - boxHeight;
 
         canvas.drawRect(debug_x, debug_y, state.width, state.height, paint_debugBG);
 
-        canvas.drawText(msg1, debug_x + boxWidth / 2, debug_y + 30, paint_msgText);
-        canvas.drawText(msg2, debug_x + boxWidth / 2, debug_y + 55, paint_msgText);
-        canvas.drawText(msg3, debug_x + boxWidth / 2, debug_y + 80, paint_msgText);
-        canvas.drawText(msg4, debug_x + boxWidth / 2, debug_y + 105, paint_msgText);
+        canvas.drawText(msgResAndScale, debug_x + boxWidth / 2, debug_y + 30, paint_msgText);
+        canvas.drawText(msgOffset, debug_x + boxWidth / 2, debug_y + 55, paint_msgText);
+        canvas.drawText(msgVisibleIds, debug_x + boxWidth / 2, debug_y + 80, paint_msgText);
+        canvas.drawText(msgProvider, debug_x + boxWidth / 2, debug_y + 105, paint_msgText);
+        canvas.drawText(msgMemory, debug_x + boxWidth / 2, debug_y + 130, paintMem);
+
 
     }
 

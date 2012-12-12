@@ -1,6 +1,5 @@
 package net.nologin.meep.ca.model;
 
-import net.nologin.meep.ca.util.Utils;
 
 public class WolframTile extends Tile {
 
