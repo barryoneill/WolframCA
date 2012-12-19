@@ -3,21 +3,20 @@ package net.nologin.meep.ca.model;
 import android.graphics.*;
 
 
-public class Tile implements Comparable<Tile> {
+public abstract class Tile implements Comparable<Tile> {
 
-    public int renderOrder;
+    //public int renderOrder;
 
     public int size;
     public int xId;
     public int yId;
-    public Bitmap bitmap;
+
 
     public Tile(int xId, int yId, int size) {
 
         this.xId = xId;
         this.yId = yId;
         this.size = size;
-        bitmap = null;
     }
 
     public boolean isOrigin(){
@@ -32,19 +31,13 @@ public class Tile implements Comparable<Tile> {
         return new Rect(canvasX, canvasY, canvasX + size, canvasY + size);
     }
 
-    public boolean rendered(){
-        return bitmap != null;
-    }
-
-    public void notifyOffScreen(){
-        bitmap = null;
-    }
-
     public String toString() {
 
         return String.format("Tile[(%d,%d),%d*%d]",xId,yId,size,size);
 
     }
+
+    public abstract Bitmap getBitmap();
 
     @Override
     public int compareTo(Tile tile) {

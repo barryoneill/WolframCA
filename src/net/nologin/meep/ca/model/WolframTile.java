@@ -1,6 +1,8 @@
 package net.nologin.meep.ca.model;
 
 
+import android.graphics.Bitmap;
+
 public class WolframTile extends Tile {
 
     public static final int TILE_SIZE = 256;
@@ -21,16 +23,23 @@ public class WolframTile extends Tile {
      * if/when the cells are scrolled back into view.
      *
      * if memory starts being a problem, consider using BitSet instead (at the cost of CPU overhead) */
-    boolean[] top,bot; // left,right
+    boolean[] bottomState = null; // left,right
+
+    public Bitmap bitmap = null;
+    public int renderOrder = -1; // debug for determining when a cell was rendered
 
     public WolframTile(int xId, int yId) {
         super(xId, yId, TILE_SIZE);
 
-        top = new boolean[size];
+        //top = new boolean[size];
 //        left = new boolean[size];
 //        right = new boolean[size];
-        bot = new boolean[size];
 
+    }
+
+    @Override
+    public Bitmap getBitmap(){
+        return bitmap;
     }
 
     public String toString(){

@@ -163,6 +163,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                         tileProvider.generateNextTile();
 
+                        tileProvider.flushCache(getVisibleTileIds(state.canvasOffsetX, state.canvasOffsetY));
 
                     }
                     Thread.sleep(5); // so we can interact in a reasonable time
@@ -215,10 +216,11 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                 for(Tile t : tileRow){
 
-                    if (t.rendered()) {
+                    Bitmap bmp = t.getBitmap();
+                    if (bmp != null) {
 
                         //bitmap.setPixels(t.bitmap, 0, tileSize, xOff, yOff, tileSize, tileSize);
-                        canvas.drawBitmap(t.bitmap,x ,y ,null);
+                        canvas.drawBitmap(bmp, x ,y ,null);
 
                         // TODO: remove or make debug dependent
                         canvas.drawRect(t.getRect(x,y), paint_gridLine);
@@ -414,6 +416,8 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         public Rect getTileIndexBounds();
 
         public List<List<Tile>> getTilesForCurrent(Rect tileIdRange);
+
+        public void flushCache(Rect tileIdRange);
 
     }
 }
