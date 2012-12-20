@@ -254,23 +254,19 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
-    @Override
-    public void setTileViewPort(Rect visibleTileIds){
 
 
-
-    }
-    /*
+    @Deprecated
     public void flushCache(Rect tileIdRange) {
 
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
             if(t.bottomState != null && t.bitmap != null && !tileIdRange.contains(t.xId,t.yId)){
-                //t.bitmap = null;
+                t.bitmap = null;
             }
         }
 
-    } */
+    }
 
     @Override
     public String toString(){

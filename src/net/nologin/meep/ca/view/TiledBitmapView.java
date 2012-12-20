@@ -5,6 +5,7 @@ import android.view.*;
 import android.content.Context;
 import android.util.AttributeSet;
 import net.nologin.meep.ca.model.Tile;
+import net.nologin.meep.ca.model.WolframTileProvider;
 import net.nologin.meep.ca.util.Utils;
 
 import java.util.ArrayList;
@@ -106,9 +107,12 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.canvasOffsetX = state.numVisibleTiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
         state.canvasOffsetY = 0;
 
-        state.updateVisibleTileRange();
+        notifyOffsetChange();
     }
 
+    private void notifyOffsetChange(){
+        state.updateVisibleTileRange();
+    }
 
 
     private List<List<Tile>> getVisibleTileGrid(Rect tileIdRange) {
@@ -166,7 +170,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                         tileProvider.generateNextTile();
 
-                        // TODO: revisit! tileProvider.flushCache(calculateVisibleTileRange(state.canvasOffsetX, state.canvasOffsetY));
+                        tileProvider.flushCache(state.visibleTileIdRange);
 
                     }
                     Thread.sleep(5); // so we can interact in a reasonable time
@@ -387,7 +391,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
             int newOffY = state.canvasOffsetY - (int)distanceY;
             state.canvasOffsetY = newOffY > tileProvider.getTileIndexBounds().top ? tileProvider.getTileIndexBounds().top : newOffY;
 
-            state.updateVisibleTileRange();
+            notifyOffsetChange();
 
             return true;
         }
@@ -435,10 +439,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         public Rect getTileIndexBounds();
 
-        // public List<List<Tile>> getTilesForCurrent(Rect tileIdRange);
-        public void setTileViewPort(Rect tileIdRange);
+        //public void setTileViewPort(Rect tileIdRange);
 
-        // public void flushCache(Rect tileIdRange);
+        public void flushCache(Rect tileIdRage);
 
     }
 }
