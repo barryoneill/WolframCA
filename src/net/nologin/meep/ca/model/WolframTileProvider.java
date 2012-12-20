@@ -15,7 +15,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     private HashMap<Integer,WolframTile> tileCache;
     private int ruleNo = 0;
 
-    private Queue<WolframTile> renderQueue;
+    private Queue<WolframTile> displayPreReqQueue;
 
     int renderOrderCnt = 1;
 
@@ -27,7 +27,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     public WolframTileProvider(Context ctx, int ruleNo){
 
         tileCache = new HashMap<Integer,WolframTile>();
-        renderQueue = new PriorityQueue<WolframTile>();
+        displayPreReqQueue = new PriorityQueue<WolframTile>();
 
         this.ruleNo = ruleNo;
 
@@ -52,7 +52,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         ruleNo  = newRule;
         tileCache = new HashMap<Integer,WolframTile>();
-        renderQueue = new PriorityQueue<WolframTile>();
+        displayPreReqQueue = new PriorityQueue<WolframTile>();
         renderOrderCnt = 1;
 
     }
@@ -86,7 +86,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         tileCache.put(cacheKey,t);
 
         // to be rendered later in another thread
-        renderQueue.add(t);
+        displayPreReqQueue.add(t);
 
         return t;
 
@@ -98,41 +98,27 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     }
 
-    public List<List<Tile>> getTilesForCurrent(Rect tileIdRange) {
 
-        List<List<Tile>> result = new ArrayList<List<Tile>>();
-
-        for(int y = tileIdRange.top; y <= tileIdRange.bottom; y++){
-
-            List<Tile> curRow = new ArrayList<Tile>();
-            for(int x = tileIdRange.left; x <= tileIdRange.right; x++){
-                curRow.add(getTile(x,y));
-            }
-            result.add(curRow);
-        }
-
-        return result;
-    }
 
     @Override
     public void generateNextTile() {
 
-        if(renderQueue.isEmpty()){
+        if(displayPreReqQueue.isEmpty()){
             return;
         }
 
         // take next off queue.  If that has non-calculated prereqs, add them to the model
         WolframTile t;
         do {
-            t = renderQueue.peek();
+            t = displayPreReqQueue.peek();
         }
         while(addPrerequisites(t));
 
         // refresh 't', as that obtained in loop above might be overriden in priority by a prerequisite
-        t = renderQueue.remove();
+        t = displayPreReqQueue.remove();
 
 
-        //log("*** Rendering " + t + ", (queue size=" + renderQueue.size()+")");
+        //log("*** Rendering " + t + ", (queue size=" + displayPreReqQueue.size()+")");
 
         int tsize = getTileSize();
 
@@ -267,7 +253,14 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         return tile.bottomState;
     }
 
+
     @Override
+    public void setTileViewPort(Rect visibleTileIds){
+
+
+
+    }
+    /*
     public void flushCache(Rect tileIdRange) {
 
         Collection<WolframTile> entries = tileCache.values();
@@ -277,11 +270,11 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             }
         }
 
-    }
+    } */
 
     @Override
     public String toString(){
-        return String.format("[rule=%d,c=%d,q=%d]",ruleNo,tileCache.size(),renderQueue.size());
+        return String.format("[rule=%d,c=%d,q=%d]", ruleNo, tileCache.size(), displayPreReqQueue.size());
     }
 
 
