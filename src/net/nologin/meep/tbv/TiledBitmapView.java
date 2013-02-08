@@ -123,18 +123,20 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
             return;
         }
 
-        int SCROLL_BUFFER = 1;
+        int tileSize  = tileProvider.getTileSize();
 
-        // we need enough to cover the whole width (hence the ceil), + 1 for scroll buffer
-        state.numVisibleTiles_w = (int)Math.ceil(state.width / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
-        state.numVisibleTiles_h = (int)Math.ceil(state.height / (float)tileProvider.getTileSize()) + SCROLL_BUFFER;
+        // we need enough to cover the whole width (hence the ceil),
+        state.numVisibleTiles_w = (int)Math.ceil(state.width / (float)tileSize) + 1;
+        state.numVisibleTiles_h = (int)Math.ceil(state.height / (float)tileSize) + 1;
 
 
         // in the case of an odd number of horizontal tiles, we need an offset to move the origin to the middle
-        state.canvasOffsetX = state.numVisibleTiles_w % 2 != 0 ? -tileProvider.getTileSize() : 0;
+        state.canvasOffsetX = 0; //state.numVisibleTiles_w % 2 != 0 ? -tileSize : 0;
         state.canvasOffsetY = 0;
 
         notifyOffsetChange();
+
+
     }
 
     private void notifyOffsetChange(){
@@ -147,7 +149,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         // all tiles on one side of y axis
         int top = 0 - state.canvasOffsetY/tileProvider.getTileSize();
 
-        int bottom = top + state.numVisibleTiles_h;
+        int bottom = top + state.numVisibleTiles_h - 1; // first row has value y=0!
         int right = left + state.numVisibleTiles_w;
 
         state.visibleTileIdRange = new Rect(left,top,right,bottom);
