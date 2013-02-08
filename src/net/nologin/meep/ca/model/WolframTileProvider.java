@@ -5,29 +5,25 @@ import android.graphics.*;
 import android.util.Log;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.util.Utils;
-import net.nologin.meep.ca.view.TiledBitmapView;
+import net.nologin.meep.tbv.TileProvider;
 
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class WolframTileProvider implements TiledBitmapView.TileProvider {
+public class WolframTileProvider implements TileProvider {
 
-    private HashMap<Integer,WolframTile> tileCache;
-    private int ruleNo = 0;
-
-    private Queue<WolframTile> displayPreReqQueue;
-
+    private int ruleNo;
     int renderOrderCnt = 1;
 
     private int PIXEL_ON, PIXEL_OFF;
 
     private Paint paint_tileDebugTxt;
 
+    private final Map<Integer,WolframTile> tileCache;
+    private final List<WolframTile> renderQueue;
 
     public WolframTileProvider(Context ctx, int ruleNo){
-
-        tileCache = new HashMap<Integer,WolframTile>();
-        displayPreReqQueue = new PriorityQueue<WolframTile>();
 
         this.ruleNo = ruleNo;
 
@@ -40,6 +36,13 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         paint_tileDebugTxt.setAntiAlias(true);
         paint_tileDebugTxt.setTextAlign(Paint.Align.CENTER);
 
+        // doc
+        tileCache = new ConcurrentHashMap<Integer,WolframTile>();
+
+        // this will be emptied and rebuilt each time the set on on-screen tiles changes
+        // Ensure only synchronized access at critical points!
+        renderQueue = Collections.synchronizedList(new LinkedList<WolframTile>());
+
     }
 
 
@@ -51,8 +54,13 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         }
 
         ruleNo  = newRule;
-        tileCache = new HashMap<Integer,WolframTile>();
-        displayPreReqQueue = new PriorityQueue<WolframTile>();
+
+        tileCache.clear();
+
+        synchronized (renderQueue){
+            renderQueue.clear();
+        }
+
         renderOrderCnt = 1;
 
     }
@@ -82,16 +90,14 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         // cache miss, new tile
         t = new WolframTile(xId,yId);
 
-        Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
+        // Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
         tileCache.put(cacheKey,t);
-
-        // to be rendered later in another thread
-        displayPreReqQueue.add(t);
 
         return t;
 
     }
 
+    // TODO: revisit and properly justify/doc
     private int getCacheKey(int x, int y){
 
         return x << 16 ^ y;
@@ -99,33 +105,37 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
-
     @Override
     public void generateNextTile() {
 
-        if(displayPreReqQueue.isEmpty()){
-            return;
-        }
-
-        // take next off queue.  If that has non-calculated prereqs, add them to the model
         WolframTile t;
-        do {
-            t = displayPreReqQueue.peek();
+
+        synchronized (renderQueue){
+            if(renderQueue.isEmpty()){
+                return;
+            }
+            t = renderQueue.remove(0);
         }
-        while(addPrerequisites(t));
 
-        // refresh 't', as that obtained in loop above might be overriden in priority by a prerequisite
-        t = displayPreReqQueue.remove();
+        // Log.w(Utils.LOG_TAG," ---> " + ((LinkedList)renderQueue).toString());
 
 
-        //log("*** Rendering " + t + ", (queue size=" + displayPreReqQueue.size()+")");
+        //log("*** Rendering " + t + ", (queue size=" + renderQueue.size()+")");
 
         int tsize = getTileSize();
 
+        if(t == null){
+            return;
+        }
+
         generateBmpForTile(t);
 
+        if(t.bmpData == null){
+            return;
+        }
+
         // do some debug
-        Canvas c = new Canvas(t.bitmap);
+        Canvas c = new Canvas(t.bmpData);
         c.drawText("(" + t.xId + "," + t.yId + ",r=" + t.renderOrder + ")",tsize/2,tsize/2,paint_tileDebugTxt);
 
     }
@@ -140,10 +150,10 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
      * need to calculate the whole neighbour tile, just enough to populate the touching boundary - which only requires
      * the top row of the neighbour - avoiding the infinite loop).
      */
-    private boolean addPrerequisites(WolframTile t){
+    private void addPrerequisites(WolframTile t){
 
         if(t.yId <= 0){  // top row doesn't have prerequisites
-            return false;
+            return;
         }
 
         int curY = t.yId-1;   // start one row up
@@ -164,7 +174,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
             }
 
             if(!foundMissing){ // no missing prereq tiles were found, we can stop looking
-                return false;
+                return;
             }
 
             // move up a row, expand left and right by one
@@ -174,7 +184,6 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         }
 
-        return true; // true == t had prerequisites which were added
 
     }
 
@@ -191,9 +200,15 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
         }
         else{
             int yAbove = t.yId - 1;
-            stateTL = getBottomStateFromPrereqTile(t.xId - 1, yAbove);
-            stateT = getBottomStateFromPrereqTile(t.xId, yAbove);
-            stateTR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
+            try {
+                stateTL = getBottomStateFromPrereqTile(t.xId - 1, yAbove);
+                stateT = getBottomStateFromPrereqTile(t.xId, yAbove);
+                stateTR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
+            }
+            catch(IllegalStateException e){
+                Log.w(Utils.LOG_TAG, "Generating bmpData for " + t + ", error:" + e.getMessage());
+                return;
+            }
         }
 
         int[] bmpData = new int[TSIZE*TSIZE];
@@ -218,7 +233,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
                 }
             }
 
-            // populate the 'bitmap' segment for this tile
+            // populate the 'bmpData' segment for this tile
             int rowOffset = row * TSIZE;
             for(int col=TSIZE;col<TSIZE*2;col++){
                 int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
@@ -236,7 +251,7 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
         Bitmap bmp = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
         bmp.setPixels(bmpData,0,TSIZE,0,0,TSIZE,TSIZE);
-        t.bitmap = bmp;
+        t.bmpData = bmp;
 
         t.renderOrder = renderOrderCnt++;
 
@@ -254,15 +269,34 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
     }
 
 
+    public void notifyTileIDRangeChange(Rect currentViewportIDRange, Context ctx) {
 
+        Log.w(Utils.LOG_TAG,"TILE ID RANGE CHANGE - " + currentViewportIDRange);
 
-    @Deprecated
-    public void flushCache(Rect tileIdRange) {
-
+        // wipe any bmp content that's not currently in view
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
-            if(t.bottomState != null && t.bitmap != null && !tileIdRange.contains(t.xId,t.yId)){
-                t.bitmap = null;
+            if(t.bottomState != null && t.bmpData != null && !currentViewportIDRange.contains(t.xId,t.yId)){
+                Log.e(Utils.LOG_TAG, "clearing out tile (" + t.xId + "," + t.yId + ")");
+                t.bmpData = null;
+            }
+        }
+
+
+        synchronized (renderQueue){
+            // wipe the render queue
+            renderQueue.clear();
+
+            // work out what tiles need renderin'
+            for(int y = currentViewportIDRange.top; y <= currentViewportIDRange.bottom; y++){
+                for(int x = currentViewportIDRange.left; x <= currentViewportIDRange.right; x++){
+
+                    WolframTile t = getTile(x,y);
+                    addPrerequisites(t);
+                    renderQueue.add(t);
+
+
+                }
             }
         }
 
@@ -270,8 +304,9 @@ public class WolframTileProvider implements TiledBitmapView.TileProvider {
 
     @Override
     public String toString(){
-        return String.format("[rule=%d,c=%d,q=%d]", ruleNo, tileCache.size(), displayPreReqQueue.size());
+        return String.format("[rule=%d,c=%d,q=%d]", ruleNo, tileCache.size(), renderQueue.size());
     }
+
 
 
 }

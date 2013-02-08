@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import net.nologin.meep.ca.model.WolframTileProvider;
 import net.nologin.meep.ca.util.Utils;
+import net.nologin.meep.tbv.TiledBitmapView;
 
 public class WolframCAView extends TiledBitmapView {
 

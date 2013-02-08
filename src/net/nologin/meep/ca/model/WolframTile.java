@@ -2,6 +2,7 @@ package net.nologin.meep.ca.model;
 
 
 import android.graphics.Bitmap;
+import net.nologin.meep.tbv.Tile;
 
 public class WolframTile extends Tile {
 
@@ -13,42 +14,41 @@ public class WolframTile extends Tile {
         CA_EMPTY_STATE = new boolean[TILE_SIZE];
         CA_START_STATE = new boolean[TILE_SIZE];
         CA_START_STATE[TILE_SIZE/2] = true;
-
     }
 
-    /* We could just use the bitmap data in each cell to determine state, but I'm going to add the additional
-     * cost of 4 boolean arrays (cell state for each boundary of this cell). The problem is when the user
-     * starts scrolling _waay_ offcenter, holding the bitmap data for each cell will gobble RAM.  The plan is
-     * to clear the bitmap data of cells not being displayed, and recalculate it from these boolean arrays
-     * if/when the cells are scrolled back into view.
-     *
-     * if memory starts being a problem, consider using BitSet instead (at the cost of CPU overhead) */
-    boolean[] bottomState = null; // left,right
+    // the actual contents to be rendered to the screen, may be null
+    public Bitmap bmpData = null;
 
-    public Bitmap bitmap = null;
+    /* We can't really keep the bmpData data for every tile generated in memory, otherwise we'd quickly
+     * run out of heap space (as the user scrolls further away from the start position).
+     *
+     * When this tile goes out of view, the caller will clear the bmpData data from this Tile instance.
+     * To save it having to recalculate the contents (should this tile be scrolled back into view), we
+     * keep a boolean array of the bottom row/state of this tile (doesn't get cleared with the bmpData data).
+     *
+     * This way, any Tile's bmpData contents can quickly be recalculated using the bottom state
+     * from the three tiles above.
+     *
+     */
+    boolean[] bottomState = null;
+
     public int renderOrder = -1; // debug for determining when a cell was rendered
 
     public WolframTile(int xId, int yId) {
         super(xId, yId, TILE_SIZE);
-
-        //top = new boolean[size];
-//        left = new boolean[size];
-//        right = new boolean[size];
-
     }
 
     @Override
-    public Bitmap getBitmap(){
-        return bitmap;
+    public Bitmap getBmpData(){
+        return bmpData;
     }
 
     public String toString(){
-
         return "Wolf" + super.toString();
-
     }
 
-    @Override
+    // TODO: strip out into comparator!
+    /*
     public int compareTo(Tile tile) {
 
         // render queue is a PriorityQueue, - 'least' gets priority
@@ -74,5 +74,6 @@ public class WolframTile extends Tile {
 
         return 0;
     }
+    */
 
 }
