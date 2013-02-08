@@ -28,6 +28,8 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
     TileProvider tileProvider;
 
+    protected boolean displayDebug;
+
     public TiledBitmapView(Context context, AttributeSet attrs) {
 
         super(context, attrs);
@@ -68,7 +70,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         gestureDetector = new GestureDetector(new GestureListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
-
+        displayDebug = true; // make configurable
 
     }
 
@@ -131,7 +133,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
 
         // in the case of an odd number of horizontal tiles, we need an offset to move the origin to the middle
-        state.canvasOffsetX = 0; //state.numVisibleTiles_w % 2 != 0 ? -tileSize : 0;
+        state.canvasOffsetX = state.numVisibleTiles_w % 2 != 0 ? -tileSize/2 : 0;
         state.canvasOffsetY = 0;
 
         notifyOffsetChange();
@@ -269,16 +271,19 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                         //bmpData.setPixels(t.bmpData, 0, tileSize, xOff, yOff, tileSize, tileSize);
                         canvas.drawBitmap(bmp, x ,y ,null);
 
-                        // TODO: remove or make debug dependent
-                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
+                        if(displayDebug){
+                            canvas.drawRect(t.getRect(x,y), paint_gridLine);
+                        }
 
                     } else {
 
-                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
+                        if(displayDebug){
+                            canvas.drawRect(t.getRect(x,y), paint_gridLine);
 
-                        String fmt1 = "Tile(%d,%d)";
-                        String msg1 = String.format(fmt1, t.xId, t.yId);
-                        canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
+                            String fmt1 = "Tile(%d,%d)";
+                            String msg1 = String.format(fmt1, t.xId, t.yId);
+                            canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
+                        }
 
                     }
 
@@ -288,7 +293,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
                 y += size; // move down one tile width
             }
 
-            drawDebugBox(canvas);
+            if(displayDebug){
+                drawDebugBox(canvas);
+            }
         }
 
         canvas.restore();

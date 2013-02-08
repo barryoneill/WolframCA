@@ -23,7 +23,9 @@ public class WolframTileProvider implements TileProvider {
     private final Map<Integer,WolframTile> tileCache;
     private final List<WolframTile> renderQueue;
 
-    public WolframTileProvider(Context ctx, int ruleNo){
+    private boolean displayDebug;
+
+    public WolframTileProvider(Context ctx, int ruleNo, boolean renderDebug){
 
         this.ruleNo = ruleNo;
 
@@ -43,6 +45,7 @@ public class WolframTileProvider implements TileProvider {
         // Ensure only synchronized access at critical points!
         renderQueue = Collections.synchronizedList(new LinkedList<WolframTile>());
 
+        this.displayDebug = renderDebug;
     }
 
 
@@ -134,9 +137,11 @@ public class WolframTileProvider implements TileProvider {
             return;
         }
 
-        // do some debug
-        Canvas c = new Canvas(t.bmpData);
-        c.drawText("(" + t.xId + "," + t.yId + ",r=" + t.renderOrder + ")",tsize/2,tsize/2,paint_tileDebugTxt);
+
+        if(displayDebug){
+            Canvas c = new Canvas(t.bmpData);
+            c.drawText("(" + t.xId + "," + t.yId + ",r=" + t.renderOrder + ")",tsize/2,tsize/2,paint_tileDebugTxt);
+        }
 
     }
 
