@@ -90,7 +90,7 @@ public class WolframTileProvider implements TileProvider {
         // cache miss, new tile
         t = new WolframTile(xId,yId);
 
-        // Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
+        Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
         tileCache.put(cacheKey,t);
 
         return t;
@@ -166,10 +166,10 @@ public class WolframTileProvider implements TileProvider {
 
             for(int x=curXMin; x <= curXMax; x++){
 
-                // add all missing prereqs to the queue
-                WolframTile preReq = getTile(x,curY); // a 'get' adds any non-existing tile to the model & render queue
-                if(preReq.bottomState == null){
+                WolframTile preReq = getTile(x,curY);
+                if(!renderQueue.contains(preReq) && preReq.bmpData == null){
                     foundMissing = true;
+                    renderQueue.add(preReq); // TODO: belongs here?
                 }
             }
 
@@ -287,6 +287,8 @@ public class WolframTileProvider implements TileProvider {
             // wipe the render queue
             renderQueue.clear();
 
+            String q = "";
+
             // work out what tiles need renderin'
             for(int y = currentViewportIDRange.top; y <= currentViewportIDRange.bottom; y++){
                 for(int x = currentViewportIDRange.left; x <= currentViewportIDRange.right; x++){
@@ -294,10 +296,13 @@ public class WolframTileProvider implements TileProvider {
                     WolframTile t = getTile(x,y);
                     addPrerequisites(t);
                     renderQueue.add(t);
-
+                    q += "(" + t.xId + "," + t.yId + ")";
 
                 }
             }
+
+            Log.e(Utils.LOG_TAG,"RenderQ = " + q);
+
         }
 
     }

@@ -27,7 +27,7 @@ public class WolframCAView extends TiledBitmapView {
             tp.changeRule(newRule);
         }
 
-        resetCanvasOffset();
+        jumpToOriginTile();
 
     }
 

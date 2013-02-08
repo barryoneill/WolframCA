@@ -114,10 +114,10 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         state.width = width;
         state.height = height;
 
-        resetCanvasOffset();
+        jumpToOriginTile();
     }
 
-    protected void resetCanvasOffset(){
+    protected void jumpToOriginTile(){
 
         if(tileProvider == null){
             return;
