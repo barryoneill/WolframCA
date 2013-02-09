@@ -169,7 +169,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
             List<Tile> curRow = new ArrayList<Tile>();
             for(int x = tileIdRange.left; x <= tileIdRange.right; x++){
-                curRow.add(tileProvider.getTile(x,y));
+                curRow.add(tileProvider.getTileWithCache(x, y));
             }
             result.add(curRow);
         }

@@ -16,17 +16,13 @@ public abstract class Tile {
         this.size = size;
     }
 
-    public boolean idEquals(int xId, int yId){
-        return this.xId == xId && this.yId == yId;
-    }
-
     public Rect getRect(int offsetX, int offsetY){
         return new Rect(offsetX, offsetY, offsetX + size, offsetY + size);
     }
 
     public String toString() {
 
-        return String.format("Tile[(%d,%d),%d*%d]",xId,yId,size,size);
+        return String.format("Tile[(%d,%d),%dpx]",xId,yId,size);
 
     }
 

@@ -17,7 +17,7 @@ public interface TileProvider {
      * @param y The y-attribute of the id
      * @return The tile.
      */
-    public Tile getTile(int x, int y);
+    public Tile getTileWithCache(int x, int y);
 
     /**
      * Called from a background thread, this gives the provider a chance to render
