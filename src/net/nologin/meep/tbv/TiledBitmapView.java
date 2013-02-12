@@ -154,14 +154,14 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         int bottom = top + state.numVisibleTiles_h - 1; // first row has value y=0!
         int right = left + state.numVisibleTiles_w;
 
-        state.visibleTileIdRange = new Rect(left,top,right,bottom);
+        state.visibleTileIdRange = new TileRange(left,top,right,bottom);
 
         tileProvider.notifyTileIDRangeChange(state.visibleTileIdRange, getContext());
 
     }
 
 
-    private List<List<Tile>> getVisibleTileGrid(Rect tileIdRange) {
+    private List<List<Tile>> getVisibleTileGrid(TileRange tileIdRange) {
 
         List<List<Tile>> result = new ArrayList<List<Tile>>();
 
@@ -214,7 +214,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                         view.doDraw(c);
 
-                        tileProvider.generateNextTile();
+                        tileProvider.generateNextTile(state.visibleTileIdRange);
 
                     }
                     Thread.sleep(5); // so we can interact in a reasonable time
@@ -356,7 +356,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         int canvasOffsetX = 0, canvasOffsetY = 0;
 
-        Rect visibleTileIdRange;
+        TileRange visibleTileIdRange;
 
 
     }

@@ -6,6 +6,7 @@ import android.util.Log;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.tbv.TileProvider;
+import net.nologin.meep.tbv.TileRange;
 
 
 import java.util.*;
@@ -81,9 +82,9 @@ public class WolframTileProvider implements TileProvider {
     }
 
     @Override
-    public Rect getTileIndexBounds() {
+    public TileRange getTileIndexBounds() {
 
-        return new Rect(-20,0,20,20);
+        return new TileRange(-20,0,20,20);
 
     }
 
@@ -116,7 +117,7 @@ public class WolframTileProvider implements TileProvider {
 
 
     @Override
-    public void generateNextTile() {
+    public void generateNextTile(TileRange visible) {
 
         WolframTile t;
 
@@ -138,7 +139,12 @@ public class WolframTileProvider implements TileProvider {
             return;
         }
 
-        generateBmpForTile(t);
+        if(!visible.contains(t)){
+            Log.e(Utils.LOG_TAG,"OFFSCREEN TILE - " + t  + " not in " + "[" + visible.left + "," + visible.top + "," + visible.right + "," + visible.bottom + "]");
+        }
+
+        calculateTileContents(t, visible.contains(t));
+
 
         if(t.bmpData == null){
             return;
@@ -205,7 +211,7 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    private void generateBmpForTile(WolframTile t){
+    private void calculateTileContents(WolframTile t, boolean fillBitmap){
 
         int TSIZE = getTileSize();
 
@@ -231,7 +237,11 @@ public class WolframTileProvider implements TileProvider {
 
         Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
 
-        int[] bmpData = new int[TSIZE*TSIZE];
+        int[] bmpData = null;
+
+        if(fillBitmap){
+            bmpData = new int[TSIZE*TSIZE];
+        }
 
         boolean[] prevState = new boolean[TSIZE * 3];
         boolean[] newState = new boolean[prevState.length];
@@ -253,11 +263,13 @@ public class WolframTileProvider implements TileProvider {
                 }
             }
 
-            // populate the 'bmpData' segment for this tile
-            int rowOffset = row * TSIZE;
-            for(int col=TSIZE;col<TSIZE*2;col++){
-                int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
-                bmpData[rowOffset+col-TSIZE] = val;
+            if(fillBitmap){
+                // populate the 'bmpData' segment for this tile
+                int rowOffset = row * TSIZE;
+                for(int col=TSIZE;col<TSIZE*2;col++){
+                    int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
+                    bmpData[rowOffset+col-TSIZE] = val;
+                }
             }
 
             // save the state of the bottom row
@@ -269,9 +281,11 @@ public class WolframTileProvider implements TileProvider {
             System.arraycopy(newState,0,prevState,0,prevState.length);
         }
 
-        Bitmap bmp = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
-        bmp.setPixels(bmpData,0,TSIZE,0,0,TSIZE,TSIZE);
-        t.bmpData = bmp;
+        if(fillBitmap){
+            Bitmap bmp = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
+            bmp.setPixels(bmpData,0,TSIZE,0,0,TSIZE,TSIZE);
+            t.bmpData = bmp;
+        }
 
         t.renderOrder = renderOrderCnt++;
 
@@ -289,14 +303,14 @@ public class WolframTileProvider implements TileProvider {
     }
 
 
-    public void notifyTileIDRangeChange(Rect currentViewportIDRange, Context ctx) {
+    public void notifyTileIDRangeChange(TileRange visible, Context ctx) {
 
-        Log.w(Utils.LOG_TAG,"TILE ID RANGE CHANGE - " + currentViewportIDRange);
+        Log.w(Utils.LOG_TAG,"TILE ID RANGE CHANGE - " + visible);
 
         // wipe any bmp content that's not currently in view
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
-            if(t.bottomState != null && t.bmpData != null && !currentViewportIDRange.contains(t.xId,t.yId)){
+            if(t.bottomState != null && t.bmpData != null && !visible.contains(t)){
                 // Log.e(Utils.LOG_TAG, "clearing out tile (" + t.xId + "," + t.yId + ")");
                 t.bmpData = null;
             }
@@ -310,8 +324,8 @@ public class WolframTileProvider implements TileProvider {
 
 
             // work out what tiles need renderin'
-            for(int y = currentViewportIDRange.top; y <= currentViewportIDRange.bottom; y++){
-                for(int x = currentViewportIDRange.left; x <= currentViewportIDRange.right; x++){
+            for(int y = visible.top; y <= visible.bottom; y++){
+                for(int x = visible.left; x <= visible.right; x++){
 
                     WolframTile t = getTileWithCache(x, y);
                     addPrerequisites(t);

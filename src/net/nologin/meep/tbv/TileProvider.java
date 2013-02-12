@@ -22,21 +22,24 @@ public interface TileProvider {
     /**
      * Called from a background thread, this gives the provider a chance to render
      * the bitmap contents of next tile in its queue, if any.
+     * @param visible Some providers might use this 'turn' to process a tile not currently displayed on
+     *                         the screen, and can use this rect to check if the tile currently being processed is
+     *                         on screen or not.
      */
-    public void generateNextTile();
+    public void generateNextTile(TileRange visible);
 
     /**
      * @return A rect containing the bounds of the tile ids that are valid in this view.
      * The viewport will not be scrollable past these bounds.
      */
-    public Rect getTileIndexBounds();
+    public TileRange getTileIndexBounds();
 
     /**
      * Tell the provider which tiles are currently visible in the view, giving the provider
      * an opportunity to add new tiles to its rendering queue, or to remove stale tiles
      * from any caches.
-     * @param tileIdRange The boundaries of the tile ids visible in the viewport
+     * @param visible The boundaries of the tile ids visible in the viewport
      */
-    public void notifyTileIDRangeChange(Rect tileIdRange, Context ctx);
+    public void notifyTileIDRangeChange(TileRange visible, Context ctx);
 
 }
