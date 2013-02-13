@@ -48,7 +48,7 @@ public class WolframTileProvider implements TileProvider {
         renderQueue = Collections.synchronizedList(new LinkedList<WolframTile>(){
             @Override
             public boolean add(WolframTile object) {
-                Log.e(Utils.LOG_TAG,"RQ += " + object);
+                Log.w(Utils.LOG_TAG,"RQ += " + object);
                 return super.add(object);
             }
         });
@@ -322,10 +322,23 @@ public class WolframTileProvider implements TileProvider {
             renderQueue.clear();
 
 
+            // these values used in inner 'x' loop
+            int num_tiles_horizontal = visible.numTilesHorizontal();
+            int half_tiles_horizontal = num_tiles_horizontal/2;
 
             // work out what tiles need renderin'
             for(int y = visible.top; y <= visible.bottom; y++){
-                for(int x = visible.left; x <= visible.right; x++){
+
+                /* rather than just loop x from x=visble.left to x<=visible.right, it looks a lot better
+                 * to add the middle element first, then add alternate each side adding one element at
+                 * a time, so that the tiles flow out from the center as they are rendered, rather than
+                 * left to right
+                 */
+                for (int i=0; i<num_tiles_horizontal; i++) {
+
+                    // an even i results in the next tile to the right, an odd to the left
+                    int offset = half_tiles_horizontal + ( i% 2 == 0 ? i/2 : -(i/2+1));
+                    int x = visible.left + offset;
 
                     WolframTile t = getTileWithCache(x, y);
                     addPrerequisites(t);

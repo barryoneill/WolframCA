@@ -1,7 +1,6 @@
 package net.nologin.meep.tbv;
 
 import android.content.Context;
-import android.graphics.Rect;
 
 public interface TileProvider {
 

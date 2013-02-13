@@ -27,11 +27,22 @@ public class TileRange {
             && x >= left && x <= right && y >= top && y <= bottom;
     }
 
-    public int numTiles(){
-        if(left > right || top > bottom) {
+    public int numTilesHorizontal() {
+        if(left > right){
             return 0;
         }
-        return Math.abs(right-left+1) * Math.abs(bottom-top+1);
+        return Math.abs(right-left+1);
+    }
+
+    public int numTilesVertical() {
+        if(top > bottom){
+            return 0;
+        }
+        return Math.abs(bottom-top+1);
+    }
+
+    public int numTiles(){
+        return numTilesHorizontal() * numTilesVertical();
     }
 
     public String toString(){
