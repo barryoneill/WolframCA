@@ -1,6 +1,5 @@
 package net.nologin.meep.tbv;
 
-import android.content.Context;
 
 public interface TileProvider {
 
@@ -37,8 +36,8 @@ public interface TileProvider {
      * Tell the provider which tiles are currently visible in the view, giving the provider
      * an opportunity to add new tiles to its rendering queue, or to remove stale tiles
      * from any caches.
-     * @param visible The boundaries of the tile ids visible in the viewport
+     * @param newRange The boundaries of the tile IDs now on display.
      */
-    public void notifyTileIDRangeChange(TileRange visible, Context ctx);
+    public void notifyTileIDRangeChange(TileRange newRange);
 
 }

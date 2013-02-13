@@ -155,11 +155,10 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         int right = left + state.numVisibleTiles_w;
 
 
+
         state.visibleTileIdRange = new TileRange(left,top,right,bottom);
 
-        // TODO: PASS IN old and new as an event object so the provider knows
-        // which tiles must be redrawn!
-        tileProvider.notifyTileIDRangeChange(state.visibleTileIdRange, getContext());
+        tileProvider.notifyTileIDRangeChange(state.visibleTileIdRange);
 
     }
 

@@ -26,7 +26,11 @@ public class WolframTileProvider implements TileProvider {
 
     private boolean displayDebug;
 
+    private Context ctx;
+
     public WolframTileProvider(Context ctx, int ruleNo, boolean renderDebug){
+
+        this.ctx = ctx;
 
         this.ruleNo = ruleNo;
 
@@ -139,17 +143,11 @@ public class WolframTileProvider implements TileProvider {
             return;
         }
 
-        if(!visible.contains(t)){
-            Log.e(Utils.LOG_TAG,"OFFSCREEN TILE - " + t  + " not in " + "[" + visible.left + "," + visible.top + "," + visible.right + "," + visible.bottom + "]");
-        }
-
-        calculateTileContents(t, visible.contains(t));
-
+        processTileState(t, visible.contains(t));
 
         if(t.bmpData == null){
             return;
         }
-
 
         if(displayDebug){
             Canvas c = new Canvas(t.bmpData);
@@ -211,7 +209,7 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    private void calculateTileContents(WolframTile t, boolean fillBitmap){
+    private void processTileState(WolframTile t, boolean fillBitmap){
 
         int TSIZE = getTileSize();
 
@@ -303,14 +301,12 @@ public class WolframTileProvider implements TileProvider {
     }
 
 
-    public void notifyTileIDRangeChange(TileRange visible, Context ctx) {
-
-        Log.w(Utils.LOG_TAG,"TILE ID RANGE CHANGE - " + visible);
+    public void notifyTileIDRangeChange(TileRange newRange) {
 
         // wipe any bmp content that's not currently in view
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
-            if(t.bottomState != null && t.bmpData != null && !visible.contains(t)){
+            if(t.bottomState != null && t.bmpData != null && !newRange.contains(t)){
                 // Log.e(Utils.LOG_TAG, "clearing out tile (" + t.xId + "," + t.yId + ")");
                 t.bmpData = null;
             }
@@ -323,11 +319,11 @@ public class WolframTileProvider implements TileProvider {
 
 
             // these values used in inner 'x' loop
-            int num_tiles_horizontal = visible.numTilesHorizontal();
+            int num_tiles_horizontal = newRange.numTilesHorizontal();
             int half_tiles_horizontal = num_tiles_horizontal/2;
 
             // work out what tiles need renderin'
-            for(int y = visible.top; y <= visible.bottom; y++){
+            for(int y = newRange.top; y <= newRange.bottom; y++){
 
                 /* rather than just loop x from x=visble.left to x<=visible.right, it looks a lot better
                  * to add the middle element first, then add alternate each side adding one element at
@@ -338,9 +334,13 @@ public class WolframTileProvider implements TileProvider {
 
                     // an even i results in the next tile to the right, an odd to the left
                     int offset = half_tiles_horizontal + ( i% 2 == 0 ? i/2 : -(i/2+1));
-                    int x = visible.left + offset;
+                    int x = newRange.left + offset;
 
                     WolframTile t = getTileWithCache(x, y);
+                    if(t.bmpData != null){
+                        continue;
+                    }
+
                     addPrerequisites(t);
                     renderQueue.add(t);
                 }
