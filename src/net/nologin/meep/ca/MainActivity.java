@@ -3,20 +3,15 @@ package net.nologin.meep.ca;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.*;
-import greendroid.app.GDActivity;
-import greendroid.widget.ActionBar;
-import greendroid.widget.ActionBarItem;
-import greendroid.widget.LoaderActionBarItem;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.ca.view.WolframCAView;
 
-import java.util.Random;
-
-import static net.nologin.meep.ca.util.Utils.log;
-
-public class MainActivity extends GDActivity {
+public class MainActivity extends SherlockActivity {
 
 
     private final Handler mHandler = new Handler();
@@ -31,37 +26,43 @@ public class MainActivity extends GDActivity {
     };
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //Used to put dark icons on light action bar
+        //boolean isLight = SampleList.THEME == R.style.Theme_Sherlock_Light;
+
+        MenuInflater inflater = getSupportMenuInflater();
+        inflater.inflate(R.menu.actionbar_itemlist, menu);
+        return true;
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.actionbar_changerule:
+                Toast.makeText(this,"changin' the rule", Toast.LENGTH_LONG).show();
+                return true;
+            case R.id.actionbar_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
-
-        setActionBarContentView(R.layout.main);
-        // was: setContentView(R.layout.main);
-
-        getActionBar().setType(ActionBar.Type.Empty);
+        setContentView(R.layout.main);
 
 
         // TODO: fix
         caView = (WolframCAView) findViewById(R.id.caView);
         caView.setupForRule(110);
-
-
-        addActionBarItem(ActionBarItem.Type.Refresh, R.id.action_bar_refresh);
-
-
-        // for a custom icon
-//        addActionBarItem(getActionBar()
-//                .newActionBarItem(NormalActionBarItem.class)
-//                .setDrawable(R.drawable.ic_title_export)
-//                .setContentDescription(R.string.gd_export), R.id.action_bar_export);
-
-        addActionBarItem(ActionBarItem.Type.Settings, R.id.actionbar_settings);
-
-
-        // is this right?
-        TextView tv = (TextView) this.findViewById(R.id.gd_action_bar_title);
-        tv.setText("Wolfram CA");
-
 
 
         final String list[] = new String[RULES.length];
@@ -110,32 +111,6 @@ public class MainActivity extends GDActivity {
     }
 
 
-    @Override
-    public boolean onHandleActionBarItemClick(ActionBarItem item, int position) {
-
-        switch (item.getItemId()) {
-
-            case R.id.actionbar_settings:
-                Toast.makeText(this, "Settings!" , Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-
-            case R.id.action_bar_refresh:
-                final LoaderActionBarItem loaderItem = (LoaderActionBarItem) item;
-                mHandler.postDelayed(new Runnable() {
-                    public void run() {
-                        loaderItem.setLoading(false);
-                    }
-                }, 2000);
-                Toast.makeText(this, "Refresh done", Toast.LENGTH_SHORT).show();
-                break;
-
-            default:
-                return super.onHandleActionBarItemClick(item, position);
-        }
-
-        return true;
-    }
 
     @Override
     protected void onResume() {

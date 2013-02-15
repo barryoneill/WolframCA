@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="WolframCATheme" parent="android:Theme.Black.NoTitleBar.Fullscreen">
-
-
-</style>
-    <style name="Theme.WolframGDTheme" parent="@style/Theme.GreenDroid.NoTitleBar">
-
-        <item name="gdActionBarBackground">@drawable/actionbar_bg</item>
-        <item name="gdActionBarApplicationDrawable">@drawable/ic_menu_back</item>
-
-    </style>
-
-
+    <style name="WolframCATheme" parent="Theme.Sherlock"/>
 
 </resources>

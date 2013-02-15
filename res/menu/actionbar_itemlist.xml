@@ -1,0 +1,19 @@
+<menu xmlns:android=
+              "http://schemas.android.com/apk/res/android" >
+
+    <!-- change rule, always visible -->
+    <item
+            android:id="@+id/actionbar_changerule"
+            android:icon="@drawable/ic_action_grow"
+            android:showAsAction="always|withText"
+            android:title="change rule">
+    </item>
+    <!-- settings, if room -->
+    <item
+            android:id="@+id/actionbar_settings"
+            android:icon="@drawable/ic_action_settings"
+            android:showAsAction="ifRoom"
+            android:title="settings">
+    </item>
+
+</menu>

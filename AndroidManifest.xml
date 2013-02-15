@@ -7,15 +7,15 @@
     <!--
          I want this to work on at least a minimum of 2.3.3 Gingerbread,
          so I'll aim to keep the midSDK at 10.  Unfortunately that means
-         no ActionBar, so this project depends on GreedDroid as a dependency app.
-         https://github.com/cyrilmottier/GreenDroid
+         no core ActionBar, so this project requires ActionBarSherlock
+          (incl android v4 compat library) as a dependency project.
+          http://actionbarsherlock.com/
     -->
     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="17"/>
     <application
-            android:name=".CAApplication"
             android:label="@string/app_name"
             android:icon="@drawable/launcher"
-            android:theme="@style/Theme.WolframGDTheme">
+            android:theme="@style/WolframCATheme">
         <activity android:name=".MainActivity" android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
