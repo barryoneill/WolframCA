@@ -20,7 +20,7 @@ public class WolframCAView extends TiledBitmapView {
 
         if(tp == null){
             Utils.log("Init new provider, rule = " + newRule);
-            setTileProvider(new WolframTileProvider(getContext(),newRule, displayDebug));
+            setTileProvider(new WolframTileProvider(getContext(),newRule));
         }
         else {
             Utils.log("Changing rule, rule = " + newRule);

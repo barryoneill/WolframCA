@@ -19,16 +19,12 @@ public class WolframTileProvider implements TileProvider {
 
     private int PIXEL_ON, PIXEL_OFF;
 
-    private Paint paint_tileDebugTxt;
-
     private final Map<Integer,WolframTile> tileCache;
     private final List<WolframTile> renderQueue;
 
-    private boolean displayDebug;
-
     private Context ctx;
 
-    public WolframTileProvider(Context ctx, int ruleNo, boolean renderDebug){
+    public WolframTileProvider(Context ctx, int ruleNo){
 
         this.ctx = ctx;
 
@@ -37,11 +33,6 @@ public class WolframTileProvider implements TileProvider {
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
 
-        paint_tileDebugTxt = new Paint();
-        paint_tileDebugTxt.setColor(Color.WHITE);
-        paint_tileDebugTxt.setTextSize(20);
-        paint_tileDebugTxt.setAntiAlias(true);
-        paint_tileDebugTxt.setTextAlign(Paint.Align.CENTER);
 
         // doc
         tileCache = new ConcurrentHashMap<Integer,WolframTile>();
@@ -57,7 +48,6 @@ public class WolframTileProvider implements TileProvider {
             }
         });
 
-        this.displayDebug = renderDebug;
     }
 
 
@@ -137,22 +127,12 @@ public class WolframTileProvider implements TileProvider {
 
         //log("*** Rendering " + t + ", (queue size=" + renderQueue.size()+")");
 
-        int tsize = getTileSize();
 
         if(t == null){
             return;
         }
 
         processTileState(t, visible.contains(t));
-
-        if(t.bmpData == null){
-            return;
-        }
-
-        if(displayDebug){
-            Canvas c = new Canvas(t.bmpData);
-            c.drawText("(" + t.xId + "," + t.yId + ",r=" + t.renderOrder + ")",tsize/2,tsize/2,paint_tileDebugTxt);
-        }
 
     }
 
@@ -351,8 +331,7 @@ public class WolframTileProvider implements TileProvider {
             for(WolframTile t : renderQueue){
                 q += "(" + t.xId + "," + t.yId + "),";
             }
-
-            Log.e(Utils.LOG_TAG,"RenderQ, size=" + renderQueue.size() + ", elems=" + q);
+            Log.d(Utils.LOG_TAG,"RenderQ, size=" + renderQueue.size() + ", elems=" + q);
 
         }
 

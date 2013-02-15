@@ -70,7 +70,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         gestureDetector = new GestureDetector(new GestureListener());
         scaleDetector = new ScaleGestureDetector(context,new ScaleListener());
 
-        displayDebug = true; // make configurable
+        displayDebug = Utils.Prefs.getPrefDebugEnabled(context);
 
     }
 
@@ -82,6 +82,9 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         return this.tileProvider;
     }
 
+    public void setDisplayDebug(boolean displayDebug){
+        this.displayDebug = displayDebug;
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -279,14 +282,25 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
                     } else {
 
-                        if(displayDebug){
-                            canvas.drawRect(t.getRect(x,y), paint_gridLine);
+//                        if(displayDebug){
+//                            canvas.drawRect(t.getRect(x,y), paint_gridLine);
+//
+//                            String fmt1 = "Tile(%d,%d)";
+//                            String msg1 = String.format(fmt1, t.xId, t.yId);
+//                            canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
+//                        }
 
-                            String fmt1 = "Tile(%d,%d)";
-                            String msg1 = String.format(fmt1, t.xId, t.yId);
-                            canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
-                        }
+                    }
 
+                    if(displayDebug){
+
+
+
+                        canvas.drawRect(t.getRect(x,y), paint_gridLine);
+
+                        String fmt1 = "Tile(%d,%d)";
+                        String msg1 = String.format(fmt1, t.xId, t.yId);
+                        canvas.drawText(msg1, x + (size/2), y + (size/2), paint_msgText);
                     }
 
                     x += size; // move right one tile width

@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WolframCA</string>
+
+    <string name="settings_category_general">General Settings</string>
+    <string name="settings_category_about">Miscellaneous</string>
+
+    <string name="setting_showdebug_title">Render debug information, such as gridlines and status information.</string>
+    <string name="setting_showdebug_summaryon">Debug information will be shown</string>
+    <string name="setting_showdebug_summaryoff">Debug information will not be shown</string>
+    <string name="about_githubpage_title">WolframCA on GitHub</string>
+    <string name="about_githubpage_summary">Go to the WolframCA project page on GitHub</string>
+    <string name="about_githubpage_url">http://github.com/barryoneill</string><!-- todo: update when live -->
+    <string name="about_wolframca_title">About WolframCA</string>
+    <string name="about_wolframca_summary">About this app</string>
+    <string name="about_wolframca_text">BLAH</string>
 </resources>
