@@ -4,33 +4,6 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
-       <!--
-    <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
-
-        <ImageButton
-                android:id="@+id/caRulePrev"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_menu_back"/>
-
-        <Spinner
-                android:id="@+id/caSpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        <ImageButton
-                android:id="@+id/caRuleNext"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_menu_forward"/>
-
-    </LinearLayout>
-
-           -->
 
     <net.nologin.meep.ca.view.WolframCAView
             android:id="@+id/caView"

@@ -1,12 +1,24 @@
 <menu xmlns:android=
               "http://schemas.android.com/apk/res/android" >
 
+    <item
+            android:id="@+id/actionbar_changerule_prev"
+            android:icon="@drawable/ic_action_arrow_left"
+            android:showAsAction="always"
+            android:title="previous">
+    </item>
     <!-- change rule, always visible -->
     <item
             android:id="@+id/actionbar_changerule"
             android:icon="@drawable/ic_action_grow"
             android:showAsAction="always|withText"
             android:title="change rule">
+    </item>
+    <item
+            android:id="@+id/actionbar_changerule_next"
+            android:icon="@drawable/ic_action_arrow_right"
+            android:showAsAction="always"
+            android:title="previous">
     </item>
     <!-- settings, if room -->
     <item

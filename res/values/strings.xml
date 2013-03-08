@@ -2,6 +2,13 @@
 <resources>
     <string name="app_name">WolframCA</string>
 
+    <string name="actionbar_ruleSummary">Rule %1$s</string>
+
+    <string name="ruledialog_title">Select Rule</string>
+    <string name="ruledialog_ruleSummary">Rule %1$s</string>
+    <string name="ruledialog_sliderStartVal">0</string>
+    <string name="ruledialog_sliderEndVal">255</string>
+
     <string name="settings_category_general">General Settings</string>
     <string name="settings_category_about">Miscellaneous</string>
 

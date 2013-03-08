@@ -50,12 +50,16 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-
     public void changeRule(int newRule) {
 
-        if(newRule < 0 || newRule > 255){
-            Utils.log("Rule not in range 0-255: " + newRule);
-            return;
+        // sanity checking
+        if(newRule < 0){
+            Log.w(Utils.LOG_TAG,"Rule " + newRule + " smaller than range 0-255, defaulting to 0");
+            newRule = 0;
+        }
+        if(newRule > 255){
+            Log.w(Utils.LOG_TAG,"Rule " + newRule + " larger than range 0-255, defaulting to 255");
+            newRule = 255;
         }
 
         ruleNo  = newRule;
@@ -69,6 +73,11 @@ public class WolframTileProvider implements TileProvider {
         renderOrderCnt = 1;
 
     }
+
+    public int getRule(){
+        return ruleNo;
+    }
+
 
     @Override
     public int getTileSize(){
