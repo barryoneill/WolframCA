@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.*;
 import com.actionbarsherlock.app.SherlockActivity;
@@ -17,18 +16,10 @@ import net.nologin.meep.ca.view.WolframCAView;
 public class MainActivity extends SherlockActivity {
 
 
-    private final Handler mHandler = new Handler();
-
     private WolframCAView caView;
 
     private int ruleDialog_rule;
 
-    private static int[] RULES = {
-            30, 54, 60, 62, 90, 94,
-            102, 110, 122, 126,
-            150, 158, 182, 188,
-            190, 220, 222, 250
-    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -138,51 +129,6 @@ public class MainActivity extends SherlockActivity {
 
         // TODO: fix
         selectRule(110);
-
-
-        final String list[] = new String[RULES.length];
-        for (int i = 0; i < RULES.length; i++) {
-            list[i] = "CA Rule " + RULES[i];
-        }
-
-        /*
-        final Spinner spinner = (Spinner) findViewById(R.id.caSpinner);
-
-        ArrayAdapter<String> caValueAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
-        caValueAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(caValueAdapter);
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                log("Got item id " + id + " at position " + position);
-                caView.setupForRule(RULES[position]);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {}
-        });
-
-        findViewById(R.id.caRulePrev).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                log("prev from item " + spinner.getSelectedItemPosition());
-                int pos = spinner.getSelectedItemPosition();
-                spinner.setSelection(pos-1 < 0 ? RULES.length-1 : pos-1);
-
-            }
-        });
-
-        findViewById(R.id.caRuleNext).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                log("next from item " + spinner.getSelectedItemPosition());
-                int pos = spinner.getSelectedItemPosition();
-                spinner.setSelection(pos+1 >= RULES.length ? 0 : pos+1);
-            }
-        });
-           */
-
 
 
     }
