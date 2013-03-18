@@ -201,7 +201,7 @@ public class WolframTileProvider implements TileProvider {
     // TODO: **************************************************************************************************
     // TODO: **************************************************************************************************
     // TODO: calculate per zoom level!
-    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 8;
+    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 64;
     // TODO: **************************************************************************************************
     // TODO: **************************************************************************************************
     static final boolean[] EMPTY = new boolean[DATASIZE_FOR_ZOOM];
@@ -222,22 +222,33 @@ public class WolframTileProvider implements TileProvider {
 
     private void processTileState(WolframTile t, boolean fillBitmap){
 
+        Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
 
-
-        // to build a tile, we need to know the state of the bottom row of the three tiles above
-        boolean[] stateTL, stateT, stateTR;
-        if(t.yId == 0){
-            // TODO: cache these as static?
-            stateTL =  EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
-            stateT = EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
-            stateTR = EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
+        int[] bmpData = null;
+        if(fillBitmap){
+            bmpData = new int[DATASIZE_FOR_ZOOM*DATASIZE_FOR_ZOOM];
         }
-        else{
+
+        // hold the current state 'row', across three adjacent tiles (tile t in middle)
+        boolean[] curState = new boolean[DATASIZE_FOR_ZOOM * 3];
+
+        // hold the state of the row above curState
+        boolean[] prevState = new boolean[curState.length];
+
+
+        // for any tile not on the 'top' row, we need the state of the bottom
+        // of each of the three tiles above (above left, directly above, above right)
+        if(t.yId != 0){
             int yAbove = t.yId - 1;
             try {
-                stateTL = getBottomStateFromPrereqTile(t.xId - 1, yAbove);
-                stateT = getBottomStateFromPrereqTile(t.xId, yAbove);
-                stateTR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
+                boolean[] stateAL = getBottomStateFromPrereqTile(t.xId - 1, yAbove);
+                boolean[] stateA = getBottomStateFromPrereqTile(t.xId, yAbove);
+                boolean[] stateAR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
+
+                System.arraycopy(stateAL,0,prevState,0,DATASIZE_FOR_ZOOM);
+                System.arraycopy(stateA,0,prevState,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
+                System.arraycopy(stateAR,0,prevState,DATASIZE_FOR_ZOOM*2,DATASIZE_FOR_ZOOM);
+
             }
             catch(IllegalStateException e){
                 Log.w(Utils.LOG_TAG, "Cannot process tile " + t + ", error:" + e.getMessage());
@@ -245,41 +256,25 @@ public class WolframTileProvider implements TileProvider {
             }
         }
 
-        Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
-
-        if(t.xId == -2 && t.yId == 0){
-            Log.e(Utils.LOG_TAG,t + " TDEP => " + TMP(stateTL) + ", "+ TMP(stateT) + "," + TMP(stateTR));
-        }
-
-
-        int[] bmpData = null;
-
-        if(fillBitmap){
-            bmpData = new int[DATASIZE_FOR_ZOOM*DATASIZE_FOR_ZOOM];
-        }
-
-        boolean[] prevState = new boolean[DATASIZE_FOR_ZOOM * 3];
-        boolean[] newState = new boolean[prevState.length];
-        System.arraycopy(stateTL,0,prevState,0,DATASIZE_FOR_ZOOM);
-        System.arraycopy(stateT,0,prevState,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
-        System.arraycopy(stateTR,0,prevState,DATASIZE_FOR_ZOOM*2,DATASIZE_FOR_ZOOM);
 
         int leftPtr = 1, rightPtr = prevState.length-2;
 
-        if(t.xId == -2 && t.yId == 0){
-            Log.e(Utils.LOG_TAG,t + ", PrevState=" + TMP(prevState));
-        }
 
         for (int row = 0; row < DATASIZE_FOR_ZOOM; row++) {
 
             // update 'newState' for the current row
-            if(row == 0 && t.yId == 0 && (t.xId == -1 || t.xId == 0 || t.xId == 1)){
-                newState[newState.length/2 - (t.xId * DATASIZE_FOR_ZOOM)] = true;
-                Log.e(Utils.LOG_TAG,"WOOOOOAAAHHH " + t);
+            if(row == 0 && t.yId == 0){
+                // don't do anything...
+                // .. unless you're tile -1<=x<=1, in which case we need to fix your references to the start state
+                // (-1 will see it on the right of curState, 0 will see it in the middle, 1 over to the left )
+                if((t.xId == -1 || t.xId == 0 || t.xId == 1)){
+                    curState[curState.length/2 - (t.xId * DATASIZE_FOR_ZOOM)] = true;
+                }
             }
             else {
+                // all other rows in all other tiles, we simply rule check on the previous state
                 for(int col = leftPtr; col <= rightPtr; col++){
-                    newState[col] = WolframRuleTable.checkRule(ruleNo,prevState[col-1],prevState[col],prevState[col+1]);
+                    curState[col] = WolframRuleTable.checkRule(ruleNo,prevState[col-1],prevState[col],prevState[col+1]);
                 }
             }
 
@@ -287,7 +282,7 @@ public class WolframTileProvider implements TileProvider {
                 // populate the 'bmpData' segment for this tile
                 int rowOffset = row * DATASIZE_FOR_ZOOM;
                 for(int col=DATASIZE_FOR_ZOOM;col<DATASIZE_FOR_ZOOM*2;col++){
-                    int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
+                    int val = curState[col] ? PIXEL_ON : PIXEL_OFF;
                     bmpData[rowOffset+col-DATASIZE_FOR_ZOOM] = val;
                 }
             }
@@ -295,14 +290,11 @@ public class WolframTileProvider implements TileProvider {
             // save the state of the bottom row
             if(row == DATASIZE_FOR_ZOOM-1){
                 t.bottomState = new boolean[DATASIZE_FOR_ZOOM];
-                System.arraycopy(newState,DATASIZE_FOR_ZOOM,t.bottomState,0,DATASIZE_FOR_ZOOM);
+                System.arraycopy(curState,DATASIZE_FOR_ZOOM,t.bottomState,0,DATASIZE_FOR_ZOOM);
             }
 
-            System.arraycopy(newState,0,prevState,0,prevState.length);
+            System.arraycopy(curState,0,prevState,0,prevState.length);
 
-            if(t.xId == -2 && t.yId == 0){
-                //Log.e(Utils.LOG_TAG,"Row=" + row + ", newState=" + TMP(newState));
-            }
 
         }
 
