@@ -17,6 +17,8 @@ public class WolframTileProvider implements TileProvider {
     private int ruleNo;
     int renderOrderCnt = 1;
 
+    int zoomFactor = 2;
+
     private int PIXEL_ON, PIXEL_OFF;
 
     private final Map<Integer,WolframTile> tileCache;
@@ -32,7 +34,6 @@ public class WolframTileProvider implements TileProvider {
 
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
-
 
         // doc
         tileCache = new ConcurrentHashMap<Integer,WolframTile>();
@@ -78,17 +79,16 @@ public class WolframTileProvider implements TileProvider {
         return ruleNo;
     }
 
-
-    @Override
-    public int getTileSize(){
-        return WolframTile.TILE_SIZE;
-    }
-
     @Override
     public TileRange getTileIndexBounds() {
 
         return new TileRange(-20,0,20,20);
 
+    }
+
+    @Override
+    public int getTileWidthPixels() {
+        return WolframTile.TILE_WIDTH_PX;
     }
 
     @Override
@@ -198,16 +198,21 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
+    // TODO: calculate per zoom level!
+    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 2;
+    static final boolean[] EMPTY = new boolean[DATASIZE_FOR_ZOOM];
+
     private void processTileState(WolframTile t, boolean fillBitmap){
 
-        int TSIZE = getTileSize();
+
 
         // to build a tile, we need to know the state of the bottom row of the three tiles above
         boolean[] stateTL, stateT, stateTR;
         if(t.yId == 0){
-            stateTL = WolframTile.CA_EMPTY_STATE;
-            stateT = WolframTile.CA_EMPTY_STATE;
-            stateTR = WolframTile.CA_EMPTY_STATE;
+            // TODO: cache these as static?
+            stateTL =  EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
+            stateT = EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
+            stateTR = EMPTY; // new boolean[DATASIZE_FOR_ZOOM]; // WolframTile.CA_EMPTY_STATE;
         }
         else{
             int yAbove = t.yId - 1;
@@ -227,22 +232,22 @@ public class WolframTileProvider implements TileProvider {
         int[] bmpData = null;
 
         if(fillBitmap){
-            bmpData = new int[TSIZE*TSIZE];
+            bmpData = new int[DATASIZE_FOR_ZOOM*DATASIZE_FOR_ZOOM];
         }
 
-        boolean[] prevState = new boolean[TSIZE * 3];
+        boolean[] prevState = new boolean[DATASIZE_FOR_ZOOM * 3];
         boolean[] newState = new boolean[prevState.length];
-        System.arraycopy(stateTL,0,prevState,0,TSIZE);
-        System.arraycopy(stateT,0,prevState,TSIZE,TSIZE);
-        System.arraycopy(stateTR,0,prevState,TSIZE*2,TSIZE);
+        System.arraycopy(stateTL,0,prevState,0,DATASIZE_FOR_ZOOM);
+        System.arraycopy(stateT,0,prevState,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
+        System.arraycopy(stateTR,0,prevState,DATASIZE_FOR_ZOOM*2,DATASIZE_FOR_ZOOM);
 
         int leftPtr = 1, rightPtr = prevState.length-2;
 
-        for (int row = 0; row < TSIZE; row++) {
+        for (int row = 0; row < DATASIZE_FOR_ZOOM; row++) {
 
             // update 'newState' for the current row
             if(row == 0 && t.yId == 0 && (t.xId == -1 || t.xId == 0 || t.xId == 1)){
-                newState[newState.length/2 - (t.xId * TSIZE)] = true;
+                newState[newState.length/2 - (t.xId * DATASIZE_FOR_ZOOM)] = true;
             }
             else {
                 for(int col = leftPtr; col < rightPtr; col++){
@@ -252,26 +257,40 @@ public class WolframTileProvider implements TileProvider {
 
             if(fillBitmap){
                 // populate the 'bmpData' segment for this tile
-                int rowOffset = row * TSIZE;
-                for(int col=TSIZE;col<TSIZE*2;col++){
+                int rowOffset = row * DATASIZE_FOR_ZOOM;
+                for(int col=DATASIZE_FOR_ZOOM;col<DATASIZE_FOR_ZOOM*2;col++){
                     int val = newState[col] ? PIXEL_ON : PIXEL_OFF;
-                    bmpData[rowOffset+col-TSIZE] = val;
+                    bmpData[rowOffset+col-DATASIZE_FOR_ZOOM] = val;
                 }
             }
 
             // save the state of the bottom row
-            if(row == TSIZE-1){
-                t.bottomState = new boolean[WolframTile.TILE_SIZE];
-                System.arraycopy(newState,TSIZE,t.bottomState,0,TSIZE);
+            if(row == DATASIZE_FOR_ZOOM-1){
+                t.bottomState = new boolean[DATASIZE_FOR_ZOOM];
+                System.arraycopy(newState,DATASIZE_FOR_ZOOM,t.bottomState,0,DATASIZE_FOR_ZOOM);
             }
 
             System.arraycopy(newState,0,prevState,0,prevState.length);
         }
 
         if(fillBitmap){
-            Bitmap bmp = Bitmap.createBitmap(TSIZE,TSIZE, Bitmap.Config.RGB_565);
-            bmp.setPixels(bmpData,0,TSIZE,0,0,TSIZE,TSIZE);
-            t.bmpData = bmp;
+
+            // orig (roughly)
+//            Bitmap bmp = Bitmap.createBitmap(WolframTile.TILE_WIDTH_PX,WolframTile.TILE_WIDTH_PX, Bitmap.Config.RGB_565);
+//            bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
+//            t.bmpData = bmp;
+
+            Bitmap bmp = Bitmap.createBitmap(DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM, Bitmap.Config.RGB_565);
+            bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
+
+            // disable filters, or we'll lose edge sharpness
+            t.bmpData = Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX,WolframTile.TILE_WIDTH_PX, false); // = bmp;
+
+
+//
+//            Bitmap.createBitmap()
+
+
         }
 
         t.renderOrder = renderOrderCnt++;
@@ -289,6 +308,11 @@ public class WolframTileProvider implements TileProvider {
         return tile.bottomState;
     }
 
+    public void notifyZoomFactorChangeTEMP(float newZoom) {
+
+
+
+    }
 
     public void notifyTileIDRangeChange(TileRange newRange) {
 

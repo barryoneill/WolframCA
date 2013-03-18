@@ -128,7 +128,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
             return;
         }
 
-        int tileSize  = tileProvider.getTileSize();
+        int tileSize  = tileProvider.getTileWidthPixels();
 
         // we need enough to cover the whole width (hence the ceil),
         state.numVisibleTiles_w = (int)Math.ceil(state.width / (float)tileSize) + 1;
@@ -149,10 +149,10 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
         // put the tiles either side of the axis
         int left = - (state.numVisibleTiles_w - (state.numVisibleTiles_w /2)); // int rounding puts possible larger on right
         // then apply offset
-        left -= state.canvasOffsetX/tileProvider.getTileSize();
+        left -= state.canvasOffsetX/tileProvider.getTileWidthPixels();
 
         // all tiles on one side of y axis
-        int top = 0 - state.canvasOffsetY/tileProvider.getTileSize();
+        int top = 0 - state.canvasOffsetY/tileProvider.getTileWidthPixels();
 
         int bottom = top + state.numVisibleTiles_h - 1; // first row has value y=0!
         int right = left + state.numVisibleTiles_w;
@@ -260,7 +260,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
             List<List<Tile>> visibleGrid = getVisibleTileGrid(state.visibleTileIdRange);
 
-            int size = tileProvider.getTileSize();
+            int size = tileProvider.getTileWidthPixels();
 
             int y = moffY % size;
 
@@ -368,7 +368,8 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
 
         int numVisibleTiles_w, numVisibleTiles_h;
 
-        float scaleFactor = 0.5f;
+        // ScaleListener sets this from 0.1 to 5.0
+        float scaleFactor = 1.0f;
 
         int canvasOffsetX = 0, canvasOffsetY = 0;
 
@@ -387,8 +388,7 @@ public abstract class TiledBitmapView extends SurfaceView implements SurfaceHold
             // Don't let the object get too small or too large.
             state.scaleFactor = Math.max(0.1f, Math.min(state.scaleFactor, 5.0f));
 
-            log("Scale factor now " + state.scaleFactor + " - " + tgThread.running);
-
+            tileProvider.notifyZoomFactorChangeTEMP(state.scaleFactor);
 
             return true;
         }

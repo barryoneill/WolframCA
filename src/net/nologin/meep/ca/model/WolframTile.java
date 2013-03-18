@@ -6,15 +6,12 @@ import net.nologin.meep.tbv.Tile;
 
 public class WolframTile extends Tile {
 
-    public static final int TILE_SIZE = 256;
-
-    public static final boolean[] CA_START_STATE;
-    public static final boolean[] CA_EMPTY_STATE;
-    static {
-        CA_EMPTY_STATE = new boolean[TILE_SIZE];
-        CA_START_STATE = new boolean[TILE_SIZE];
-        CA_START_STATE[TILE_SIZE/2] = true;
-    }
+    /* From playing around with tile/bitmap size, it seems somewhere around 256 is
+     * a good balance for tile size.  If the tile size is too big, the longer processing time
+     * for each tile ruins the feeling of responsiveness (it also can gobble the heap).
+     * If it's too small, there's more heap/queue object processing and while 'responsive',
+     * it'll be slow. */
+    public static final int TILE_WIDTH_PX = 256;
 
     // the actual contents to be rendered to the screen, may be null
     public Bitmap bmpData = null;
@@ -35,7 +32,7 @@ public class WolframTile extends Tile {
     public int renderOrder = -1; // debug for determining when a cell was rendered
 
     public WolframTile(int xId, int yId) {
-        super(xId, yId, TILE_SIZE);
+        super(xId, yId, TILE_WIDTH_PX);
     }
 
     @Override
@@ -46,34 +43,5 @@ public class WolframTile extends Tile {
     public String toString(){
         return "Wolf" + super.toString();
     }
-
-    // TODO: strip out into comparator!
-    /*
-    public int compareTo(Tile tile) {
-
-        // render queue is a PriorityQueue, - 'least' gets priority
-
-        // The state of a wolfram cell depends on the row above - upper rows (lower y value) get priority
-        if(yId < tile.yId){
-            return -1;
-        }
-        if(yId > tile.yId){
-            return 1;
-        }
-
-        // same level - so we want the tile closest to the vertical axis
-        int thisX = Math.abs(xId);
-        int thatX = Math.abs(tile.xId);
-
-        if(thisX < thatX){
-            return -1;
-        }
-        if(thisX > thatX){
-            return 1;
-        }
-
-        return 0;
-    }
-    */
 
 }
