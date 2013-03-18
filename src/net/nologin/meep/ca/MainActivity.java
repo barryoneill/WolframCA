@@ -128,7 +128,7 @@ public class MainActivity extends SherlockActivity {
         caView = (WolframCAView) findViewById(R.id.caView);
 
         // TODO: fix
-        selectRule(110);
+        selectRule(139);
 
 
     }

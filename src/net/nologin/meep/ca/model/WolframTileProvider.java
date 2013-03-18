@@ -198,9 +198,27 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
+    // TODO: **************************************************************************************************
+    // TODO: **************************************************************************************************
     // TODO: calculate per zoom level!
-    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 2;
+    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 8;
+    // TODO: **************************************************************************************************
+    // TODO: **************************************************************************************************
     static final boolean[] EMPTY = new boolean[DATASIZE_FOR_ZOOM];
+
+    private String TMP(boolean[] in){
+        String r = "[";
+        for(int i=0;i<in.length;i++){
+            r += in[i] ? "1" : "0";
+            if(i != in.length-1){
+                r+=",";
+            }
+        }
+
+
+        r += "]";
+        return r;
+    }
 
     private void processTileState(WolframTile t, boolean fillBitmap){
 
@@ -229,6 +247,11 @@ public class WolframTileProvider implements TileProvider {
 
         Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
 
+        if(t.xId == -2 && t.yId == 0){
+            Log.e(Utils.LOG_TAG,t + " TDEP => " + TMP(stateTL) + ", "+ TMP(stateT) + "," + TMP(stateTR));
+        }
+
+
         int[] bmpData = null;
 
         if(fillBitmap){
@@ -243,14 +266,19 @@ public class WolframTileProvider implements TileProvider {
 
         int leftPtr = 1, rightPtr = prevState.length-2;
 
+        if(t.xId == -2 && t.yId == 0){
+            Log.e(Utils.LOG_TAG,t + ", PrevState=" + TMP(prevState));
+        }
+
         for (int row = 0; row < DATASIZE_FOR_ZOOM; row++) {
 
             // update 'newState' for the current row
             if(row == 0 && t.yId == 0 && (t.xId == -1 || t.xId == 0 || t.xId == 1)){
                 newState[newState.length/2 - (t.xId * DATASIZE_FOR_ZOOM)] = true;
+                Log.e(Utils.LOG_TAG,"WOOOOOAAAHHH " + t);
             }
             else {
-                for(int col = leftPtr; col < rightPtr; col++){
+                for(int col = leftPtr; col <= rightPtr; col++){
                     newState[col] = WolframRuleTable.checkRule(ruleNo,prevState[col-1],prevState[col],prevState[col+1]);
                 }
             }
@@ -271,6 +299,11 @@ public class WolframTileProvider implements TileProvider {
             }
 
             System.arraycopy(newState,0,prevState,0,prevState.length);
+
+            if(t.xId == -2 && t.yId == 0){
+                //Log.e(Utils.LOG_TAG,"Row=" + row + ", newState=" + TMP(newState));
+            }
+
         }
 
         if(fillBitmap){
