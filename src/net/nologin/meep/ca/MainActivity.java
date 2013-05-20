@@ -116,6 +116,8 @@ public class MainActivity extends SherlockActivity {
 
         getSherlock().getActionBar().setTitle(getResources().getString(R.string.actionbar_ruleSummary,rule));
         caView.setupForRule(rule);
+
+
     }
 
     @Override
@@ -128,7 +130,7 @@ public class MainActivity extends SherlockActivity {
         caView = (WolframCAView) findViewById(R.id.caView);
 
         // TODO: fix
-        selectRule(139);
+        selectRule(110);
 
 
     }
@@ -138,7 +140,7 @@ public class MainActivity extends SherlockActivity {
     protected void onResume() {
         super.onResume();
 
-        caView.setDisplayDebug(Utils.Prefs.getPrefDebugEnabled(this));
+        caView.setDebugEnabled(Utils.Prefs.getPrefDebugEnabled(this));
 
 
     }

@@ -5,6 +5,7 @@ import android.graphics.*;
 import android.util.Log;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.util.Utils;
+import net.nologin.meep.tbv.GridAnchor;
 import net.nologin.meep.tbv.TileProvider;
 import net.nologin.meep.tbv.TileRange;
 
@@ -16,8 +17,6 @@ public class WolframTileProvider implements TileProvider {
 
     private int ruleNo;
     int renderOrderCnt = 1;
-
-    int zoomFactor = 2;
 
     private int PIXEL_ON, PIXEL_OFF;
 
@@ -44,7 +43,7 @@ public class WolframTileProvider implements TileProvider {
         renderQueue = Collections.synchronizedList(new LinkedList<WolframTile>(){
             @Override
             public boolean add(WolframTile object) {
-                Log.w(Utils.LOG_TAG,"RQ += " + object);
+                //Log.w(Utils.LOG_TAG,"RQ += " + object);
                 return super.add(object);
             }
         });
@@ -80,10 +79,9 @@ public class WolframTileProvider implements TileProvider {
     }
 
     @Override
-    public TileRange getTileIndexBounds() {
+    public Integer[] getTileIndexBounds(){
 
-        return new TileRange(-20,0,20,20);
-
+        return new Integer[]{null,0,null,null}; //  { left, top, right, bottom }
     }
 
     @Override
@@ -92,7 +90,7 @@ public class WolframTileProvider implements TileProvider {
     }
 
     @Override
-    public WolframTile getTileWithCache(int xId, int yId){
+    public WolframTile getTile(int xId, int yId){
 
         int cacheKey = getCacheKey(xId, yId);
 
@@ -109,6 +107,11 @@ public class WolframTileProvider implements TileProvider {
 
         return t;
 
+    }
+
+    @Override
+    public GridAnchor getGridAnchor() {
+        return GridAnchor.N;
     }
 
     // TODO: revisit and properly justify/doc
@@ -174,7 +177,8 @@ public class WolframTileProvider implements TileProvider {
 
             for(int x=curXMin; x <= curXMax; x++){
 
-                WolframTile preReq = getTileWithCache(x, curY);
+                // the impl of getTile() above puts the tile in the cache if it wasn't already there
+                WolframTile preReq = getTile(x, curY);
                 if(!renderQueue.contains(preReq) && preReq.bottomState == null){
                     foundMissing = true;
                     deps.add(preReq);
@@ -201,28 +205,13 @@ public class WolframTileProvider implements TileProvider {
     // TODO: **************************************************************************************************
     // TODO: **************************************************************************************************
     // TODO: calculate per zoom level!
-    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 64;
+    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / 1;
     // TODO: **************************************************************************************************
     // TODO: **************************************************************************************************
-    static final boolean[] EMPTY = new boolean[DATASIZE_FOR_ZOOM];
-
-    private String TMP(boolean[] in){
-        String r = "[";
-        for(int i=0;i<in.length;i++){
-            r += in[i] ? "1" : "0";
-            if(i != in.length-1){
-                r+=",";
-            }
-        }
-
-
-        r += "]";
-        return r;
-    }
 
     private void processTileState(WolframTile t, boolean fillBitmap){
 
-        Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
+        //Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
 
         int[] bmpData = null;
         if(fillBitmap){
@@ -300,27 +289,16 @@ public class WolframTileProvider implements TileProvider {
 
         if(fillBitmap){
 
-            // orig (roughly)
-//            Bitmap bmp = Bitmap.createBitmap(WolframTile.TILE_WIDTH_PX,WolframTile.TILE_WIDTH_PX, Bitmap.Config.RGB_565);
-//            bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
-//            t.bmpData = bmp;
-
             Bitmap bmp = Bitmap.createBitmap(DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM, Bitmap.Config.RGB_565);
             bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
-
-            // disable filters, or we'll lose edge sharpness
             t.bmpData = Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX,WolframTile.TILE_WIDTH_PX, false); // = bmp;
-
-
-//
-//            Bitmap.createBitmap()
-
 
         }
 
         t.renderOrder = renderOrderCnt++;
 
     }
+
 
     private boolean[] getBottomStateFromPrereqTile(int xId, int yId){
         WolframTile tile = tileCache.get(getCacheKey(xId,yId));
@@ -335,6 +313,7 @@ public class WolframTileProvider implements TileProvider {
 
     public void notifyZoomFactorChangeTEMP(float newZoom) {
 
+        Log.e(Utils.LOG_TAG,"WOAH I AM NOW " + newZoom);
 
 
     }
@@ -374,7 +353,8 @@ public class WolframTileProvider implements TileProvider {
                     int offset = half_tiles_horizontal + ( i% 2 == 0 ? i/2 : -(i/2+1));
                     int x = newRange.left + offset;
 
-                    WolframTile t = getTileWithCache(x, y);
+                    // the impl of getTile adds the tile to the cache!
+                    WolframTile t = getTile(x, y);
                     if(t.bmpData != null){
                         continue;
                     }
@@ -396,7 +376,7 @@ public class WolframTileProvider implements TileProvider {
     }
 
     @Override
-    public String toString(){
+    public String getDebugSummary(){
         return String.format("[rule=%d,c=%d,q=%d]", ruleNo, tileCache.size(), renderQueue.size());
     }
 

@@ -29,7 +29,6 @@ public class WolframCAView extends TiledBitmapView {
         }
 
         jumpToOriginTile();
-
     }
 
     public void setupForRulePrev(){
