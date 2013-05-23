@@ -6,6 +6,7 @@ import android.util.Log;
 import net.nologin.meep.ca.R;
 import net.nologin.meep.ca.util.Utils;
 import net.nologin.meep.tbv.GridAnchor;
+import net.nologin.meep.tbv.Tile;
 import net.nologin.meep.tbv.TileProvider;
 import net.nologin.meep.tbv.TileRange;
 
@@ -21,14 +22,10 @@ public class WolframTileProvider implements TileProvider {
 
     private int PIXEL_ON, PIXEL_OFF;
 
-    private final ConcurrentMap<Integer,WolframTile> tileCache;
+    private final ConcurrentMap<Long,WolframTile> tileCache;
     private final List<WolframTile> renderQueue;
 
-    private Context ctx;
-
     public WolframTileProvider(Context ctx, int ruleNo){
-
-        this.ctx = ctx;
 
         this.ruleNo = ruleNo;
 
@@ -36,7 +33,7 @@ public class WolframTileProvider implements TileProvider {
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
 
         // doc
-        tileCache = new ConcurrentHashMap<Integer,WolframTile>();
+        tileCache = new ConcurrentHashMap<Long,WolframTile>();
 
         // this will be emptied and rebuilt each time the set on on-screen tiles changes
         // Ensure only synchronized access at critical points!
@@ -87,13 +84,8 @@ public class WolframTileProvider implements TileProvider {
     @Override
     public WolframTile getTile(int xId, int yId){
 
-        int cacheKey = getCacheKey(xId, yId);
 
-        // Integer.valueOf causes Int instantiation (potential future GC trigger)
-        // Acceptable for now since there'll only be a few hundred tiles - something
-        // like SparseArray would be possibly better but it doesn't provide a non-silly means
-        // to iterate over the values (when we need to clear bmpData for off-screen tiles)
-        WolframTile t = tileCache.get(cacheKey);
+        WolframTile t = tileCache.get(Tile.getCacheKey(xId,yId));
         if(t != null){
             return t;
         }
@@ -102,7 +94,7 @@ public class WolframTileProvider implements TileProvider {
         t = new WolframTile(xId,yId);
 
         // Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
-        tileCache.put(cacheKey,t);
+        tileCache.put(t.cacheKey,t);
 
         return t;
 
@@ -112,14 +104,6 @@ public class WolframTileProvider implements TileProvider {
     public GridAnchor getGridAnchor() {
         return GridAnchor.N;
     }
-
-    // TODO: revisit and properly justify/doc
-    private int getCacheKey(int x, int y){
-
-        return x << 16 ^ y;
-
-    }
-
 
     @Override
     public boolean generateNextTile(TileRange visible) {
@@ -302,7 +286,7 @@ public class WolframTileProvider implements TileProvider {
 
 
     private boolean[] getBottomStateFromPrereqTile(int xId, int yId){
-        WolframTile tile = tileCache.get(getCacheKey(xId,yId));
+        WolframTile tile = tileCache.get(Tile.getCacheKey(xId,yId));
         if(tile == null){
             throw new IllegalStateException("Prerequisite tile (" + xId + "," + yId + ") not in cache");
         }

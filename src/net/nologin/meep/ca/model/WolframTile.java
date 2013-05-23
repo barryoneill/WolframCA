@@ -13,9 +13,6 @@ public class WolframTile extends Tile {
      * it'll be slow. */
     public static final int TILE_WIDTH_PX = 256;
 
-    // the actual contents to be rendered to the screen, may be null
-    public Bitmap bmpData = null;
-
     /* We can't really keep the bmpData data for every tile generated in memory, otherwise we'd quickly
      * run out of heap space (as the user scrolls further away from the start position).
      *
@@ -33,11 +30,6 @@ public class WolframTile extends Tile {
 
     public WolframTile(int xId, int yId) {
         super(xId, yId, TILE_WIDTH_PX);
-    }
-
-    @Override
-    public Bitmap getBmpData(){
-        return bmpData;
     }
 
     public String toString(){
