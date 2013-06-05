@@ -28,23 +28,9 @@ public class WolframCAView extends TiledBitmapView {
             tp.changeRule(newRule);
         }
 
-        jumpToOriginTile();
+        jumpToOriginTile(true);
     }
 
-    public void setupForRulePrev(){
-
-        int rule = getCurrentRule();
-        setupForRule(rule <= 0 ? 255 : rule-1); // rotate round to 255 when we pass 0
-
-    }
-
-    public void setForNextRuleNext(){
-
-        int rule = getCurrentRule();
-        setupForRule(rule >= 255 ? 0 : rule+1); // rotate round to 0 when we pass 255
-
-
-    }
 
     public int getCurrentRule(){
         WolframTileProvider tp = (WolframTileProvider)getTileProvider();

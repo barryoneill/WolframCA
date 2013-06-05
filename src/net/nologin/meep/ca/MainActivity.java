@@ -105,7 +105,8 @@ public class MainActivity extends SherlockActivity {
                 return true;
 
             case R.id.actionbar_backtostart:
-                caView.jumpToOriginTile();
+                caView.
+                        jumpToOriginTile();
                 return true;
 
             case R.id.actionbar_settings:
