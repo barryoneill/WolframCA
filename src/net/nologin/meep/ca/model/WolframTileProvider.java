@@ -19,7 +19,6 @@ public class WolframTileProvider implements TileProvider {
 
     private int ruleNo;
     int renderOrderCnt = 1;
-
     private int PIXEL_ON, PIXEL_OFF;
 
     private final ConcurrentMap<Long,WolframTile> tileCache;
@@ -81,6 +80,7 @@ public class WolframTileProvider implements TileProvider {
         return WolframTile.TILE_WIDTH_PX;
     }
 
+
     @Override
     public WolframTile getTile(int xId, int yId){
 
@@ -106,7 +106,7 @@ public class WolframTileProvider implements TileProvider {
     }
 
     @Override
-    public boolean generateNextTile(TileRange visible) {
+    public boolean processQueue(TileRange visible) {
 
         WolframTile t;
 
@@ -276,7 +276,8 @@ public class WolframTileProvider implements TileProvider {
 
             Bitmap bmp = Bitmap.createBitmap(DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM, Bitmap.Config.RGB_565);
             bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
-            t.bmpData = Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX, WolframTile.TILE_WIDTH_PX, false);
+            t.setBmpData(Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX, WolframTile.TILE_WIDTH_PX, false));
+
 
         }
 
@@ -298,7 +299,7 @@ public class WolframTileProvider implements TileProvider {
 
     public void notifyZoomFactorChange(float newZoom) {
 
-        Log.e(Utils.LOG_TAG,"WOAH I AM NOW " + newZoom);
+        // nop
 
 
     }
@@ -308,9 +309,9 @@ public class WolframTileProvider implements TileProvider {
         // wipe any bmp content that's not currently in view
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
-            if(t.bottomState != null && t.bmpData != null && !newRange.contains(t)){
+            if(t.bottomState != null && t.getBmpData() != null && !newRange.contains(t)){
                 // Log.e(Utils.LOG_TAG, "clearing out tile (" + t.xId + "," + t.yId + ")");
-                t.bmpData = null;
+                t.clearBmpData();
             }
         }
 
@@ -340,7 +341,7 @@ public class WolframTileProvider implements TileProvider {
 
                     // the impl of getTile adds the tile to the cache!
                     WolframTile t = getTile(x, y);
-                    if(t.bmpData != null){
+                    if(t.getBmpData() != null){
                         continue;
                     }
 
@@ -354,6 +355,12 @@ public class WolframTileProvider implements TileProvider {
 
         }
 
+    }
+
+
+    @Override
+    public int getGridBufferSize() {
+        return 0;  // better to have temporarily empty tiles than excessive generation
     }
 
     @Override

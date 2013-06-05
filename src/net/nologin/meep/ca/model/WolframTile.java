@@ -1,7 +1,5 @@
 package net.nologin.meep.ca.model;
 
-
-import android.graphics.Bitmap;
 import net.nologin.meep.tbv.Tile;
 
 public class WolframTile extends Tile {

@@ -103,9 +103,15 @@ public class MainActivity extends SherlockActivity {
                 alertDialog.show();
 
                 return true;
+
+            case R.id.actionbar_backtostart:
+                caView.jumpToOriginTile();
+                return true;
+
             case R.id.actionbar_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -10,6 +10,14 @@
             android:title="change rule">
     </item>
 
+    <!-- back to start -->
+    <item
+            android:id="@+id/actionbar_backtostart"
+            android:icon="@android:drawable/ic_menu_mylocation"
+            android:showAsAction="ifRoom|withText"
+            android:title="back to top">
+    </item>
+
     <!-- settings, if room -->
     <item
             android:id="@+id/actionbar_settings"
