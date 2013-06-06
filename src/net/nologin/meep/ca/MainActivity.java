@@ -89,13 +89,13 @@ public class MainActivity extends SherlockActivity {
                         .setTitle(getResources().getString(R.string.ruledialog_title))
                         .setCancelable(true)
                         .setView(ruleDialogLayout)
-                        .setPositiveButton("Select Rule", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 getSherlock().getActionBar().setTitle(getResources().getString(R.string.actionbar_ruleSummary,ruleDialog_rule));
                                 caView.setupForRule(ruleDialog_rule);
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                             }
@@ -111,7 +111,7 @@ public class MainActivity extends SherlockActivity {
 
             case R.id.actionbar_changezoom:
 
-                zoomDialog_zoom = caView.getCurrentZoom();
+                zoomDialog_zoom = caView.getCurrentPxPerCell();
 
                 View zoomDialogLayout = getLayoutInflater().inflate(R.layout.zoom_select, null);
 
@@ -164,12 +164,12 @@ public class MainActivity extends SherlockActivity {
                         .setTitle(getResources().getString(R.string.zoomdialog_title))
                         .setCancelable(true)
                         .setView(zoomDialogLayout)
-                        .setPositiveButton("Select Zoom", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 caView.setupForZoom(zoomDialog_zoom);
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.cancel();
                             }
@@ -210,6 +210,7 @@ public class MainActivity extends SherlockActivity {
         caView.setDebugEnabled(Utils.Prefs.getPrefDebugEnabled(this));
 
         caView.setupForRule(110);
+        getSherlock().getActionBar().setTitle(getResources().getString(R.string.actionbar_ruleSummary,110));
 
     }
 

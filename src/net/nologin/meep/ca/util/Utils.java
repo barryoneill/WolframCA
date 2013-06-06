@@ -2,6 +2,8 @@ package net.nologin.meep.ca.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Debug;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -50,5 +52,18 @@ public class Utils {
         }
 
         return val;
+    }
+
+    public static String getAppVersionName(Context ctx) {
+
+        try {
+            PackageInfo info = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(),0);
+            return info.versionName;
+
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(LOG_TAG,"Error getting version number! " + e.getMessage(), e);
+            return "";
+        }
+
     }
 }

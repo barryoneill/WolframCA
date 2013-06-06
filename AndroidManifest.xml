@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="net.nologin.meep.ca"
-          android:versionCode="2"
-          android:versionName="1.2">
+          android:versionCode="3"
+          android:versionName="1.3">
 
 
     <!-- version 1 - initial stuff, bit of a mess really -->
     <!-- version 2 - strip out TileBitmapView in the hope to create a separate project, also introduce
                      actionbarsherlock      -->
+    <!-- version 3 - Wow, a functioning app!  Publishing to market, 6 Jun 2013 -->
 
     <!--
          I want this to work on at least a minimum of 2.3.3 Gingerbread,

@@ -12,18 +12,18 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_category_about">
+        <!-- Enable once the source has been pushed to github
         <Preference
-                android:title="@string/about_githubpage_title"
-                android:summary="@string/about_githubpage_summary">
+                android:title="@string/setting_githubpage_title"
+                android:summary="@string/setting_githubpage_summary">
             <intent
                     android:action="android.intent.action.VIEW"
-                    android:data="@string/about_githubpage_url"/>
+                    android:data="@string/setting_githubpage_url"/>
         </Preference>
-        <!-- TODO: add when this does somethin
+         -->
         <Preference
-                android:title="@string/about_wolframca_title"
-                android:summary="@string/about_wolframca_summary">
+                android:key="pref_key_about"
+                android:title="@string/setting_about_title">
         </Preference>
-        -->
     </PreferenceCategory>
 </PreferenceScreen>
