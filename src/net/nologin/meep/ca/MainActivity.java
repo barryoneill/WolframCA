@@ -20,6 +20,8 @@ public class MainActivity extends SherlockActivity {
 
     private int ruleDialog_rule;
 
+    private int zoomDialog_zoom;
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -40,16 +42,16 @@ public class MainActivity extends SherlockActivity {
 
                 ruleDialog_rule = caView.getCurrentRule();
 
-                View layout = getLayoutInflater().inflate(R.layout.rule_select, null);
+                View ruleDialogLayout = getLayoutInflater().inflate(R.layout.rule_select, null);
 
                 // set the summary of the selected rule, eg "Rule 110"
-                final TextView ruleSummaryTxt = (TextView) layout.findViewById(R.id.ruleChangeDialog_ruleSummaryTxt);
+                final TextView ruleSummaryTxt = (TextView) ruleDialogLayout.findViewById(R.id.ruleDialog_ruleSummaryTxt);
                 ruleSummaryTxt.setText(getResources().getString(R.string.ruledialog_ruleSummary, ruleDialog_rule));
 
-                final SeekBar seekBar = (SeekBar)layout.findViewById(R.id.ruleChangeDialog_slider);
-                seekBar.setMax(255);
-                seekBar.setProgress(ruleDialog_rule);
-                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+                final SeekBar ruleSeek = (SeekBar)ruleDialogLayout.findViewById(R.id.ruleDialog_ruleSlider);
+                ruleSeek.setMax(255);
+                ruleSeek.setProgress(ruleDialog_rule);
+                ruleSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -58,36 +60,39 @@ public class MainActivity extends SherlockActivity {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {}
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
 
                     @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {}
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
                 });
 
 
-                layout.findViewById(R.id.ruleChangeDialog_butPrev).setOnClickListener(new View.OnClickListener() {
+                ruleDialogLayout.findViewById(R.id.ruleDialog_butRulePrev).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         ruleDialog_rule = ruleDialog_rule <= 0 ? 255: ruleDialog_rule-1;
-                        seekBar.setProgress(ruleDialog_rule); // seekbar listener will update edittext value
+                        ruleSeek.setProgress(ruleDialog_rule); // seekbar listener will update edittext value
                     }
                 });
 
-                layout.findViewById(R.id.ruleChangeDialog_butNext).setOnClickListener(new View.OnClickListener() {
+                ruleDialogLayout.findViewById(R.id.ruleDialog_butRuleNext).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         ruleDialog_rule = ruleDialog_rule >= 255 ? 0: ruleDialog_rule+1;
-                        seekBar.setProgress(ruleDialog_rule); // seekbar listener will update edittext value
+                        ruleSeek.setProgress(ruleDialog_rule); // seekbar listener will update edittext value
                     }
                 });
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                AlertDialog.Builder ruleDiaBuilder = new AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.ruledialog_title))
                         .setCancelable(true)
-                        .setView(layout)
+                        .setView(ruleDialogLayout)
                         .setPositiveButton("Select Rule", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                selectRule(ruleDialog_rule);
+                                getSherlock().getActionBar().setTitle(getResources().getString(R.string.actionbar_ruleSummary,ruleDialog_rule));
+                                caView.setupForRule(ruleDialog_rule);
                             }
                         })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -97,10 +102,84 @@ public class MainActivity extends SherlockActivity {
                         });
 
                 // create alert dialog
-                AlertDialog alertDialog = builder.create();
+                AlertDialog ruleDialog = ruleDiaBuilder.create();
 
                 // show it
-                alertDialog.show();
+                ruleDialog.show();
+
+                return true;
+
+            case R.id.actionbar_changezoom:
+
+                zoomDialog_zoom = caView.getCurrentZoom();
+
+                View zoomDialogLayout = getLayoutInflater().inflate(R.layout.zoom_select, null);
+
+                // set the summary of the selected rule, eg "Rule 110"
+                final TextView zoomSummaryTxt = (TextView) zoomDialogLayout.findViewById(R.id.zoomDialog_zoomSummaryTxt);
+                zoomSummaryTxt.setText(getResources().getString(R.string.zoomdialog_zoomSummary, zoomDialog_zoom));
+
+                final SeekBar zoomSeek = (SeekBar)zoomDialogLayout.findViewById(R.id.zoomDialog_zoomSlider);
+                zoomSeek.setMax(16);
+                zoomSeek.setProgress(zoomDialog_zoom);
+                zoomSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                        progress = Utils.roundZoomLevel(progress);
+                        seekBar.setProgress(progress);
+
+                        zoomDialog_zoom = progress;
+                        zoomSummaryTxt.setText(getResources().getString(R.string.zoomdialog_zoomSummary, zoomDialog_zoom));
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                    }
+                });
+
+
+                zoomDialogLayout.findViewById(R.id.zoomDialog_butZoomPrev).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        zoomDialog_zoom = Utils.roundZoomLevel(zoomDialog_zoom-2);
+                        zoomSeek.setProgress(zoomDialog_zoom); // seekbar listener will update edittext value
+                    }
+                });
+
+                zoomDialogLayout.findViewById(R.id.zoomDialog_butZoomNext).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        zoomDialog_zoom = Utils.roundZoomLevel(zoomDialog_zoom + 2);
+                        zoomSeek.setProgress(zoomDialog_zoom); // seekbar listener will update edittext value
+                    }
+                });
+
+                AlertDialog.Builder zoomDiaBuilder = new AlertDialog.Builder(this)
+                        .setTitle(getResources().getString(R.string.zoomdialog_title))
+                        .setCancelable(true)
+                        .setView(zoomDialogLayout)
+                        .setPositiveButton("Select Zoom", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                caView.setupForZoom(zoomDialog_zoom);
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+                // create alert dialog
+                AlertDialog zoomDialog = zoomDiaBuilder.create();
+
+                // show it
+                zoomDialog.show();
 
                 return true;
 
@@ -119,13 +198,6 @@ public class MainActivity extends SherlockActivity {
     }
 
 
-    public void selectRule(int rule){
-
-        getSherlock().getActionBar().setTitle(getResources().getString(R.string.actionbar_ruleSummary,rule));
-        caView.setupForRule(rule);
-
-
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -135,10 +207,9 @@ public class MainActivity extends SherlockActivity {
         setContentView(R.layout.main);
 
         caView = (WolframCAView) findViewById(R.id.caView);
+        caView.setDebugEnabled(Utils.Prefs.getPrefDebugEnabled(this));
 
-        // TODO: fix
-        selectRule(110);
-
+        caView.setupForRule(110);
 
     }
 

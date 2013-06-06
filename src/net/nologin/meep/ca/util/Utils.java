@@ -35,4 +35,20 @@ public class Utils {
             return getPrefs(ctx).getBoolean(SettingsActivity.PREF_KEY_SHOW_DEBUG,false);
         }
     }
+
+    public static int roundZoomLevel(int val) {
+
+        int step = 2, min = 1, max = 16;
+
+        val = (Math.round(val/step))*step;
+
+        if(val <= min) {
+            return min;
+        }
+        if(val >= max) {
+            return max;
+        }
+
+        return val;
+    }
 }

@@ -5,10 +5,20 @@
     <!-- launch rule selection dialog -->
     <item
             android:id="@+id/actionbar_changerule"
-            android:icon="@android:drawable/ic_menu_more"
+            android:icon="@android:drawable/ic_menu_gallery"
             android:showAsAction="always|withText"
             android:title="change rule">
     </item>
+
+
+    <!-- launch zoom selection dialog -->
+    <item
+            android:id="@+id/actionbar_changezoom"
+            android:icon="@android:drawable/ic_menu_zoom"
+            android:showAsAction="always|withText"
+            android:title="change zoom">
+    </item>
+
 
     <!-- back to start -->
     <item

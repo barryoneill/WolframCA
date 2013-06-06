@@ -18,15 +18,18 @@ import java.util.concurrent.ConcurrentMap;
 public class WolframTileProvider implements TileProvider {
 
     private int ruleNo;
+    private int pixelsPerCell;
     int renderOrderCnt = 1;
     private int PIXEL_ON, PIXEL_OFF;
 
     private final ConcurrentMap<Long,WolframTile> tileCache;
     private final List<WolframTile> renderQueue;
 
-    public WolframTileProvider(Context ctx, int ruleNo){
+    public WolframTileProvider(Context ctx, int ruleNo, int zoomLevel){
 
-        this.ruleNo = ruleNo;
+        // sanitize inputs
+        this.ruleNo = ruleNo < 1 || ruleNo > 255 ? 110 : ruleNo;  // default to rule 110
+        this.pixelsPerCell = zoomLevel < 1 ? 4 : Utils.roundZoomLevel(zoomLevel); // default to 4px per cell
 
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
@@ -41,7 +44,11 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    public void changeRule(int newRule) {
+    public int getRule() {
+        return ruleNo;
+    }
+
+    public void setRule(int newRule) {
 
         // sanity checking
         if(newRule < 0){
@@ -65,9 +72,26 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    public int getRule(){
-        return ruleNo;
+    public int getPixelsPerCell() {
+        return pixelsPerCell;
     }
+
+    public void setPixelsPerCell(int newZoom) {
+
+        // sanity checking
+        newZoom = Utils.roundZoomLevel(newZoom);
+
+        pixelsPerCell = newZoom;
+
+        tileCache.clear();
+
+        synchronized (renderQueue){
+            renderQueue.clear();
+        }
+
+        renderOrderCnt = 1;
+    }
+
 
     @Override
     public Integer[] getTileIndexBounds(){
@@ -186,25 +210,31 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    /** TODO: the notifyZoomFactorChange() needs to be implemented, rendering the tiles at a different
-     *  scale depending on the provided zoom level.  At the moment, change the hardcoded values here
-     *  to see the cells rendered at different sizes
-      */
-    static final int TILE_CELL_SIZE = 1; // eg, 2, 4, 16 px
-    static final int DATASIZE_FOR_ZOOM = WolframTile.TILE_WIDTH_PX / TILE_CELL_SIZE;
-
 
     private void processTileState(WolframTile t, boolean fillBitmap){
 
         //Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
 
+
+        /**
+         *  While each tile has a fixed size, the data contained within is defined by the
+         *  'pixelsPerCell' zoom level.
+         *
+         *  TODO: At the moment, the zoom level is set by a slider in the menu. But it would be way nicer
+         *  to have pinch-to-zoom support (see the notifyZoomFactorChange method).  For now we'll just
+         *  do it this way.
+         *
+         */
+        int cellsPerTile = WolframTile.TILE_WIDTH_PX / pixelsPerCell;
+
+
         int[] bmpData = null;
         if(fillBitmap){
-            bmpData = new int[DATASIZE_FOR_ZOOM*DATASIZE_FOR_ZOOM];
+            bmpData = new int[cellsPerTile*cellsPerTile];
         }
 
         // hold the current state 'row', across three adjacent tiles (tile t in middle)
-        boolean[] curState = new boolean[DATASIZE_FOR_ZOOM * 3];
+        boolean[] curState = new boolean[cellsPerTile * 3];
 
         // hold the state of the row above curState
         boolean[] prevState = new boolean[curState.length];
@@ -219,9 +249,9 @@ public class WolframTileProvider implements TileProvider {
                 boolean[] stateA = getBottomStateFromPrereqTile(t.xId, yAbove);
                 boolean[] stateAR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
 
-                System.arraycopy(stateAL,0,prevState,0,DATASIZE_FOR_ZOOM);
-                System.arraycopy(stateA,0,prevState,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
-                System.arraycopy(stateAR,0,prevState,DATASIZE_FOR_ZOOM*2,DATASIZE_FOR_ZOOM);
+                System.arraycopy(stateAL,0,prevState,0,cellsPerTile);
+                System.arraycopy(stateA,0,prevState,cellsPerTile,cellsPerTile);
+                System.arraycopy(stateAR,0,prevState,cellsPerTile*2,cellsPerTile);
 
             }
             catch(IllegalStateException e){
@@ -234,7 +264,7 @@ public class WolframTileProvider implements TileProvider {
         int leftPtr = 1, rightPtr = prevState.length-2;
 
 
-        for (int row = 0; row < DATASIZE_FOR_ZOOM; row++) {
+        for (int row = 0; row < cellsPerTile; row++) {
 
             // update 'newState' for the current row
             if(row == 0 && t.yId == 0){
@@ -242,7 +272,7 @@ public class WolframTileProvider implements TileProvider {
                 // .. unless you're tile -1<=x<=1, in which case we need to fix your references to the start state
                 // (-1 will see it on the right of curState, 0 will see it in the middle, 1 over to the left )
                 if((t.xId == -1 || t.xId == 0 || t.xId == 1)){
-                    curState[curState.length/2 - (t.xId * DATASIZE_FOR_ZOOM)] = true;
+                    curState[curState.length/2 - (t.xId * cellsPerTile)] = true;
                 }
             }
             else {
@@ -254,17 +284,17 @@ public class WolframTileProvider implements TileProvider {
 
             if(fillBitmap){
                 // populate the 'bmpData' segment for this tile
-                int rowOffset = row * DATASIZE_FOR_ZOOM;
-                for(int col=DATASIZE_FOR_ZOOM;col<DATASIZE_FOR_ZOOM*2;col++){
+                int rowOffset = row * cellsPerTile;
+                for(int col=cellsPerTile;col<cellsPerTile*2;col++){
                     int val = curState[col] ? PIXEL_ON : PIXEL_OFF;
-                    bmpData[rowOffset+col-DATASIZE_FOR_ZOOM] = val;
+                    bmpData[rowOffset+col-cellsPerTile] = val;
                 }
             }
 
             // save the state of the bottom row
-            if(row == DATASIZE_FOR_ZOOM-1){
-                t.bottomState = new boolean[DATASIZE_FOR_ZOOM];
-                System.arraycopy(curState,DATASIZE_FOR_ZOOM,t.bottomState,0,DATASIZE_FOR_ZOOM);
+            if(row == cellsPerTile-1){
+                t.bottomState = new boolean[cellsPerTile];
+                System.arraycopy(curState,cellsPerTile,t.bottomState,0,cellsPerTile);
             }
 
             System.arraycopy(curState,0,prevState,0,prevState.length);
@@ -274,8 +304,8 @@ public class WolframTileProvider implements TileProvider {
 
         if(fillBitmap){
 
-            Bitmap bmp = Bitmap.createBitmap(DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM, Bitmap.Config.RGB_565);
-            bmp.setPixels(bmpData,0,DATASIZE_FOR_ZOOM,0,0,DATASIZE_FOR_ZOOM,DATASIZE_FOR_ZOOM);
+            Bitmap bmp = Bitmap.createBitmap(cellsPerTile,cellsPerTile, Bitmap.Config.RGB_565);
+            bmp.setPixels(bmpData,0,cellsPerTile,0,0,cellsPerTile,cellsPerTile);
             t.setBmpData(Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX, WolframTile.TILE_WIDTH_PX, false));
 
 
@@ -299,8 +329,8 @@ public class WolframTileProvider implements TileProvider {
 
     public void notifyZoomFactorChange(float newZoom) {
 
-        // nop
-
+        // TODO: pixelsPerCell is currently set by the slider in the menu.  Perhaps this could be used for
+        // more fine grained pinch-to-zoom functionality.
 
     }
 

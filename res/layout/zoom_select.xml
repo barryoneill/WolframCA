@@ -6,7 +6,7 @@
               android:layout_height="match_parent"
               android:padding="20dp">
 
-    <!-- rule buttons and summary -->
+    <!-- zoom buttons and summary -->
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
@@ -14,14 +14,14 @@
             android:gravity="center">
 
         <ImageButton
-                android:id="@+id/ruleDialog_butRulePrev"
+                android:id="@+id/zoomDialog_butZoomPrev"
                 android:src="@drawable/ic_action_arrow_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 />
 
         <TextView
-                android:id="@+id/ruleDialog_ruleSummaryTxt"
+                android:id="@+id/zoomDialog_zoomSummaryTxt"
                 android:layout_width="wrap_content"
                 android:minWidth="140dp"
                 android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
                 />
 
         <ImageButton
-                android:id="@+id/ruleDialog_butRuleNext"
+                android:id="@+id/zoomDialog_butZoomNext"
                 android:src="@drawable/ic_action_arrow_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,14 +40,17 @@
     </LinearLayout>
 
 
-    <!-- rule change slider -->
+
+
+    <!-- zoom slider -->
     <RelativeLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
+
         <SeekBar
-                android:id="@+id/ruleDialog_ruleSlider"
+                android:id="@+id/zoomDialog_zoomSlider"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="10dp"
@@ -57,18 +60,18 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ruledialog_ruleSliderStartVal"
+                android:text="@string/zoomDialog_zoomSliderStartVal"
                 android:layout_alignParentLeft="true"
-                android:layout_below="@id/ruleDialog_ruleSlider"
+                android:layout_below="@id/zoomDialog_zoomSlider"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 />
 
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ruledialog_ruleSliderEndVal"
+                android:text="@string/zoomDialog_zoomSliderEndVal"
                 android:layout_alignParentRight="true"
-                android:layout_below="@id/ruleDialog_ruleSlider"
+                android:layout_below="@id/zoomDialog_zoomSlider"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 />
 
