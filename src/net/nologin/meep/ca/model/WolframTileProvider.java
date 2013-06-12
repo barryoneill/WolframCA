@@ -17,6 +17,9 @@ import java.util.concurrent.ConcurrentMap;
 
 public class WolframTileProvider implements TileProvider {
 
+    private static final int DEFAULT_RULE = 110;
+    private static final int DEFAULT_ZOOMLEVEL = 4;
+
     private int ruleNo;
     private int pixelsPerCell;
     int renderOrderCnt = 1;
@@ -25,11 +28,15 @@ public class WolframTileProvider implements TileProvider {
     private final ConcurrentMap<Long,WolframTile> tileCache;
     private final List<WolframTile> renderQueue;
 
+    public WolframTileProvider(Context ctx){
+        this(ctx, DEFAULT_RULE, DEFAULT_ZOOMLEVEL);
+    }
+
     public WolframTileProvider(Context ctx, int ruleNo, int zoomLevel){
 
         // sanitize inputs
-        this.ruleNo = ruleNo < 1 || ruleNo > 255 ? 110 : ruleNo;  // default to rule 110
-        this.pixelsPerCell = zoomLevel < 1 ? 4 : Utils.roundZoomLevel(zoomLevel); // default to 4px per cell
+        this.ruleNo = ruleNo < 1 || ruleNo > 255 ? DEFAULT_RULE : ruleNo;  // default to rule 110
+        this.pixelsPerCell = zoomLevel < 1 ? DEFAULT_ZOOMLEVEL : Utils.roundZoomLevel(zoomLevel); // default to 4px per cell
 
         PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
         PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
@@ -126,7 +133,7 @@ public class WolframTileProvider implements TileProvider {
 
     @Override
     public GridAnchor getGridAnchor() {
-        return GridAnchor.N;
+        return GridAnchor.TopCenter;
     }
 
     @Override
