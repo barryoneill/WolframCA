@@ -8,7 +8,7 @@
                 android:title="@string/setting_showdebug_title"
                 android:summaryOn="@string/setting_showdebug_summaryon"
                 android:summaryOff="@string/setting_showdebug_summaryoff"
-                android:defaultValue="true"/>
+                android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_category_about">
