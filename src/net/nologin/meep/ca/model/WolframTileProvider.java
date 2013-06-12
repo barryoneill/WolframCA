@@ -21,6 +21,8 @@ public class WolframTileProvider implements TileProvider {
     private static final int DEFAULT_RULE = 110;
     // older single core devices will struggle a bit, default so a larger zoom (less processing)
     private static final int DEFAULT_ZOOMLEVEL = Utils.getNumCores() == 1 ? 6 : 2;
+    // TODO: doc
+    private static final int OFFSCREEN_TILE_BUFFER = 3;
 
     private int ruleNo;
     private int pixelsPerCell;
@@ -151,7 +153,7 @@ public class WolframTileProvider implements TileProvider {
         // wipe any bmp content that's not currently in view
         Collection<WolframTile> entries = tileCache.values();
         for(WolframTile t : entries){
-            if(t.bottomState != null && t.getBmpData() != null && !newRange.contains(t)){
+            if(t.bottomState != null && t.getBmpData() != null && !newRange.contains(t,OFFSCREEN_TILE_BUFFER)){
                 t.clearBmpData();
             }
         }
@@ -420,10 +422,6 @@ public class WolframTileProvider implements TileProvider {
 
     }
 
-    @Override
-    public int getGridBufferSize() {
-        return 0;  // better to have temporarily empty tiles than excessive generation
-    }
 
     @Override
     public String getDebugSummary(){
