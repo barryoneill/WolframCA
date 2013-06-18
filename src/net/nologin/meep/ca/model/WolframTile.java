@@ -10,8 +10,7 @@ import net.nologin.meep.tbv.Tile;
  * Should we need that bitmap data again, the provider can use the saved state that's still in each
  * tile to quickly regenerate that tile's contents, instead of regenerating _all_ dependent tiles again.
  *
- * @see WolframTileProvider The WolframTileProvider contains a description of the tile
- *      generation process.
+ * @see WolframTileProvider
  */
 public class WolframTile extends Tile {
 

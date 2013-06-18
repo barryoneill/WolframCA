@@ -16,9 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The WolframCA provider is a {@link TileProvider} implementation for the {@link net.nologin.meep.ca.view.WolframCAView}.
- * The grid is made up of tiles: Each tile contains many rows of 'cells', where each successive row represents successive
- * generations of a <a href="http://mathworld.wolfram.com/ElementaryCellularAutomaton.html">Wolfram CA Rule</a>.  (The
- * number of cell rows (generations) per tile is configured by the view.
+ * The grid is made up of tiles: Each tile contains many rows of 'cells', where each successive row (across all tiles in
+ * which it appears) represents successive generations of a
+ * <a href="http://mathworld.wolfram.com/ElementaryCellularAutomaton.html">Wolfram CA Rule</a>.  The number of cell
+ * rows (generations) per tile is configured by the view.
  * <br/><br/>
  * The implementation of this gets complicated by the tiled nature of the provider.  Since each cell's state is dependent
  * on the previous generations's state and that of its two neighbours, cells that are at the edges of tiles are dependent
@@ -37,21 +38,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *      |       |       |       |
  *
  * </pre>
- * For cells in row 'a', we need all the cells marked '1'.  For row 'b', we need all rows in 'a', and those
+ * For cells in row 'a', we need all the cells marked '1'.  For row 'b', we need all cells in area 'a', and those
  * marked '2', and so on.  As we go down the rows in the tile, our list of prerequisite cells grows as well,
- * and results in an inverted triangle of prerequisite tiles.  (Note, for the first row of cells in the first
- * row of tiles, there are no dependencies, we manually set the next generation as all off/false, but the very
- * center cell in tile x=0 to be true/on).  All other cell rows follow the 3-cell dependency.
+ * and results in an inverted triangle of prerequisite cells (and by extension, tiles).
+ * <br/><br/>
+ * Note: For the first row of cells in the first row of tiles, there are no dependencies - We manually set this row/
+ * generation as all off/false, but leave the center cell in tile x=0 to be true/on).  This is our starting generation.
+ * All other cell rows follow the 3-cell dependency.
  * <br/><br/>
  * <b>Implementation</b>:<br/>
  * When the view requests a set of tiles, all prerequisite tiles are added to a processing queue, and a background
- * tasks processess these in such an order that the dependencies are meet for each tile.  In an ideal world, we'd
+ * task processess these in such an order that the dependencies are met for each tile.  In an ideal world, we'd
  * just store the bitmap, and move on.  Unfortnately, this will quickly lead to the exhaustion of heap space.
  * Rather than resort to local storage, we wipe the bitmaps of tiles that have gone far enough out of view.  However,
- * we keep a boolean array in each tile containing the state of the last row of cells for each tile in cache for the
- * life of the app. That way, when a tile is re-requested, rather than build all the dependent tiles all over again,
- * we only need go one tile row up, and we have the state required (just like the diagram above), and we have the
- * state we need only to regenerate the cell data we need.
+ * we maintain a boolean array in each tile containing the state of the last cell row/generation.  That way, when a
+ * tile is re-requested, rather than build all the dependent tiles all over again, we only need go one tile row up,
+ * and we have the state required to regenerate the cell data we need.
  * <br><br/>
  */
 public class WolframTileProvider implements TileProvider {
@@ -66,7 +68,7 @@ public class WolframTileProvider implements TileProvider {
      */
 
     /**
-     * Default rule (110), should one not be specified during construction or via {@link #setPixelsPerCell(int)}
+     * Default rule (110), should a rule not be specified during construction or via {@link #setPixelsPerCell(int)}
      */
     public static final int DEFAULT_RULE = 110;
 
@@ -83,7 +85,7 @@ public class WolframTileProvider implements TileProvider {
     private int pixelsPerCell;
     private int colorPixelOn, colorPixelOff;
 
-    // used to inform view's rendering thread (via hasFreshData()) that we have some new data for it
+    // background tasks here will set it, view's rendering thread (via hasFreshData()) will poll it
     private AtomicBoolean hasFreshData = new AtomicBoolean(false);
 
     /* All referenced tiles get cached here, even though their bitmap content will be cleared as necessary (see
@@ -91,12 +93,11 @@ public class WolframTileProvider implements TileProvider {
      * via getTile(), as well as by tile generation stuff here. */
     private final ConcurrentMap<Long, WolframTile> tileCache;
 
-    // this provider will fire off its own async jobs
     private ExecutorService executorService;
     private Future lastSubmittedTask;
 
     /**
-     * Create an instance default the rule number to {@link #DEFAULT_RULE} and zoom level to {@link #DEFAULT_ZOOMLEVEL}
+     * Constructor, defaulting the rule number to {@link #DEFAULT_RULE} and zoom level to {@link #DEFAULT_ZOOMLEVEL}
      *
      * @param ctx the context
      */
@@ -105,7 +106,7 @@ public class WolframTileProvider implements TileProvider {
     }
 
     /**
-     * Create an instance with the specified rule number and zoom level.
+     * Constructor
      *
      * @param ctx       The context
      * @param ruleNo    The rule number (0-255). Invalid rule numbers will result in {@link #DEFAULT_RULE}.
@@ -183,7 +184,7 @@ public class WolframTileProvider implements TileProvider {
     @Override
     public GridAnchor getConfigGridAnchor() {
 
-        // have the 0,0 tile (where our first generation is drawn) be anchored to the top of the screen
+        // have the (0,0) tile (where our first generation is drawn) be anchored to the top of the screen
         return GridAnchor.TopCenter;
     }
 
@@ -195,7 +196,7 @@ public class WolframTileProvider implements TileProvider {
     @Override
     public WolframTile getTile(int xId, int yId) {
 
-        // Return any cache hits, otherwise create new, cache and return.  Processing handled by onTileIDRangeChange
+        // Return cache hits, otherwise create, cache and return. Async processing triggered by onTileIDRangeChange
         WolframTile t = tileCache.get(Tile.createCacheKey(xId, yId));
         if (t != null) {
             return t;
@@ -287,14 +288,14 @@ public class WolframTileProvider implements TileProvider {
 
         List<WolframTile> deps = new LinkedList<WolframTile>();
 
-        if (t.yId <= 0) {  // top row doesn't have prerequisites
+        if (t.yId <= 0) {  // top tile doesn't have prerequisite tiles
             return;
         }
 
-        int curY = t.yId - 1;   // start one row up
-        int curXMin = t.xId - 1, curXMax = t.xId + 1;  // scan from y-1 to y+1 of that parent row
+        int curY = t.yId - 1;   // start one tile row up
+        int curXMin = t.xId - 1, curXMax = t.xId + 1;  // scan from y-1 to y+1 of that parent tile row
 
-        // keep looping up to the top row (y=0) of our model until we're satisfied all dependencies are met
+        // keep looping up to the top tile row (y=0) unless we hit a set of already processed prerequisite tiles first
         while (curY >= 0) {
 
             boolean foundMissing = false;
@@ -314,7 +315,7 @@ public class WolframTileProvider implements TileProvider {
                 break;
             }
 
-            // move up a row, expand left and right by one
+            // move up a tile row, expand left and right by one tile
             curXMin--;
             curXMax++;
             curY--;

@@ -10,9 +10,10 @@ import net.nologin.meep.ca.WolframUtils;
 import net.nologin.meep.tbv.TiledBitmapView;
 
 /**
- * This is our implementation of the {@link TiledBitmapView} for the view.  Most of the actual work for the view is
- * done by the {@link WolframTileProvider} - This subclass exists mainly to provide some setup
- * routines, and to do standard onSaveInstanceState/onRestoreInstanceState work for the rule & zoomlevel vars.
+ * This is a subclass of {@link TiledBitmapView} with some modifications to simplify use for wolfram tiles.
+ * Most of the actual work for the view is done by the {@link WolframTileProvider} - This subclass exists
+ * mainly to provide some setup routines, and to do standard onSaveInstanceState/onRestoreInstanceState work
+ * for the rule & zoomlevel vars.
  *
  * @see WolframTileProvider
  * @see TiledBitmapView

@@ -8,9 +8,10 @@ import net.nologin.meep.ca.WolframUtils;
  * <br/><br/>
  * <a href="http://mathworld.wolfram.com/ElementaryCellularAutomaton.html">http://mathworld.wolfram.com/ElementaryCellularAutomaton.html</a>
  * <br/><br/>
- * In short, the CA is a row of cells with boolean values (on or off).  In each generation, the value of
- * every cell changes, depending on its current state, and that of its left and right neighbour.  This means
- * that to calculate the next state of a cell, there are three boolean inputs, meaning 8 possible permutations:
+ * In short, the CA is a row of cells with boolean values (on or off) representing a 'generation' in the CA.
+ * For the next generation/row, the value of every cell changes, depending on its current state, and that of its left
+ * and right neighbour.  This means that to calculate the next state of a cell, there are three boolean inputs,
+ * meaning 8 possible permutations:
  * <pre>
  *  numbers 7 to 0 as binary:
  *          111 | 110 | 101 | 100 | 011 | 010 | 001 | 000
@@ -29,8 +30,8 @@ import net.nologin.meep.ca.WolframUtils;
  *             Rule  30 |  0  |  0  |  0  |  1  |  1  |  1  |  1  |  0
  * </pre>
  *
- * For rule 30, if all cells are on (111), we can see the next state is off.  Or, if the current cell is on, but the
- * left and right are off (010), then the next state is on.
+ * For rule 30, if all cells are on (111), we can see the next state is off (0).  Or, if the current cell is on, but the
+ * left and right are off (010), then the next state is on (1).
  *
  */
 public class WolframRuleTable {
@@ -49,7 +50,8 @@ public class WolframRuleTable {
     }
 
     /**
-     * Calculate the state of a cell in the next generation
+     * Calculate the value of a cell in the next generation based on the state of the relevant cells in the current
+     * generation.
      *
      * @param rule  The rule number (0-255 inclusive)
      * @param curStateLeft The current state of the cell's left neighbour
