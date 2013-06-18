@@ -20,7 +20,7 @@
 
     <string name="actionbar_ruleSummary">Rule %1$s</string>
     <string name="actionbar_but_changerule">Change Rule</string>
-    <string name="actionbar_but_changezoom">Chane Zoom</string>
+    <string name="actionbar_but_changezoom">Change Zoom</string>
     <string name="actionbar_but_backtotop">Back to Top</string>
     <string name="actionbar_but_settings">Settings</string>
 
