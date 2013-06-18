@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/mainLayout"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent">
 
-    <net.nologin.meep.ca.view.WolframCAView
-            android:id="@+id/caView"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"/>
+<!--
+    Main layout for WolframCA app.  ActionBarSherlock takes care of the
+    menubar, so the only layout item necessary is the view itself!
+-->
+<net.nologin.meep.ca.view.WolframCAView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/caView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
 
-</LinearLayout>
 

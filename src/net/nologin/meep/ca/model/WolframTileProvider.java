@@ -4,184 +4,254 @@ import android.content.Context;
 import android.graphics.*;
 import android.util.Log;
 import net.nologin.meep.ca.R;
-import net.nologin.meep.ca.util.Utils;
+import net.nologin.meep.ca.WolframUtils;
 import net.nologin.meep.tbv.GridAnchor;
 import net.nologin.meep.tbv.Tile;
 import net.nologin.meep.tbv.TileProvider;
 import net.nologin.meep.tbv.TileRange;
 
-
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * The WolframCA provider is a {@link TileProvider} implementation for the {@link net.nologin.meep.ca.view.WolframCAView}.
+ * The grid is made up of tiles: Each tile contains many rows of 'cells', where each successive row represents successive
+ * generations of a <a href="http://mathworld.wolfram.com/ElementaryCellularAutomaton.html">Wolfram CA Rule</a>.  (The
+ * number of cell rows (generations) per tile is configured by the view.
+ * <br/><br/>
+ * The implementation of this gets complicated by the tiled nature of the provider.  Since each cell's state is dependent
+ * on the previous generations's state and that of its two neighbours, cells that are at the edges of tiles are dependent
+ * on cells that exist in other tiles.
+ * <br/><br/>
+ * For example, consider the following view of a tile, t (populated with <i>a-e</i>):
+ * <pre>
+ *      | 54321 | 11111 | 12345 |
+ *     -+-------+-------+-------+-
+ *      |  5432 | aaaaa | 2345  |
+ *      |   543 | bbbbb | 345   |
+ *      |    54 | ccccc | 45    |
+ *      |     5 | ddddd | 5     |
+ *      |       | eeeee |       |
+ *     -+-------+-------+-------+-
+ *      |       |       |       |
+ *
+ * </pre>
+ * For cells in row 'a', we need all the cells marked '1'.  For row 'b', we need all rows in 'a', and those
+ * marked '2', and so on.  As we go down the rows in the tile, our list of prerequisite cells grows as well,
+ * and results in an inverted triangle of prerequisite tiles.  (Note, for the first row of cells in the first
+ * row of tiles, there are no dependencies, we manually set the next generation as all off/false, but the very
+ * center cell in tile x=0 to be true/on).  All other cell rows follow the 3-cell dependency.
+ * <br/><br/>
+ * <b>Implementation</b>:<br/>
+ * When the view requests a set of tiles, all prerequisite tiles are added to a processing queue, and a background
+ * tasks processess these in such an order that the dependencies are meet for each tile.  In an ideal world, we'd
+ * just store the bitmap, and move on.  Unfortnately, this will quickly lead to the exhaustion of heap space.
+ * Rather than resort to local storage, we wipe the bitmaps of tiles that have gone far enough out of view.  However,
+ * we keep a boolean array in each tile containing the state of the last row of cells for each tile in cache for the
+ * life of the app. That way, when a tile is re-requested, rather than build all the dependent tiles all over again,
+ * we only need go one tile row up, and we have the state required (just like the diagram above), and we have the
+ * state we need only to regenerate the cell data we need.
+ * <br><br/>
+ */
 public class WolframTileProvider implements TileProvider {
 
-    // one of the more 'interesting' rules
-    private static final int DEFAULT_RULE = 110;
-    // older single core devices will struggle a bit, default so a larger zoom (less processing)
-    private static final int DEFAULT_ZOOMLEVEL = Utils.getNumCores() == 1 ? 6 : 2;
-    // TODO: doc
+    /* Improvements that can be made in future versions:
+     * - Increase heap usage (see OFFSCREEN_TILE_BUFFER) - possibly to the exclusions of older devices
+     * - Add a flag to tiles that result in common patterns (eg all off/on), and when requests for bitmap data
+     *   occur, reuse a common copy.
+     * - Many rules result in repeating patters, perhaps add detection for these, cutting off a lot of calculation
+     * - Add hints to many of the rules that don't generate anything on one half of the space (eg rule 110), so we
+     *   can shortcircuit processing/prerequisites for those.
+     */
+
+    /**
+     * Default rule (110), should one not be specified during construction or via {@link #setPixelsPerCell(int)}
+     */
+    public static final int DEFAULT_RULE = 110;
+
+    /**
+     * Default zoom level (size of cell width in pixels).  If {@link WolframUtils#getNumCores()} reports a single
+     * core device, this will have value 6 (less processor intensive), otherwise value 2 (finer detail).
+     */
+    public static final int DEFAULT_ZOOMLEVEL = WolframUtils.getNumCores() == 1 ? 6 : 2;
+
+    // how many tiles wide a tile can be scrolled offscreen before getting cleared (caching performance v memory)
     private static final int OFFSCREEN_TILE_BUFFER = 3;
 
     private int ruleNo;
     private int pixelsPerCell;
-    private int renderOrderCnt = 1;
-    private int PIXEL_ON, PIXEL_OFF;
+    private int colorPixelOn, colorPixelOff;
 
+    // used to inform view's rendering thread (via hasFreshData()) that we have some new data for it
     private AtomicBoolean hasFreshData = new AtomicBoolean(false);
 
-    private final ConcurrentMap<Long,WolframTile> tileCache;
+    /* All referenced tiles get cached here, even though their bitmap content will be cleared as necessary (see
+     * OFFSCREEN_TILE_BUFFER). Must be mulithread friendly as it'll be accessed indirectly by view's rendering thread
+     * via getTile(), as well as by tile generation stuff here. */
+    private final ConcurrentMap<Long, WolframTile> tileCache;
 
+    // this provider will fire off its own async jobs
     private ExecutorService executorService;
     private Future lastSubmittedTask;
 
-    public WolframTileProvider(Context ctx){
+    /**
+     * Create an instance default the rule number to {@link #DEFAULT_RULE} and zoom level to {@link #DEFAULT_ZOOMLEVEL}
+     *
+     * @param ctx the context
+     */
+    public WolframTileProvider(Context ctx) {
         this(ctx, DEFAULT_RULE, DEFAULT_ZOOMLEVEL);
     }
 
-    public WolframTileProvider(Context ctx, int ruleNo, int zoomLevel){
+    /**
+     * Create an instance with the specified rule number and zoom level.
+     *
+     * @param ctx       The context
+     * @param ruleNo    The rule number (0-255). Invalid rule numbers will result in {@link #DEFAULT_RULE}.
+     * @param zoomLevel The zoomLevel (1-16, step of 2). Invalid levels will be adjusted to the nearest valid value.
+     */
+    public WolframTileProvider(Context ctx, int ruleNo, int zoomLevel) {
 
-        // sanitize inputs
-        this.ruleNo = ruleNo < 1 || ruleNo > 255 ? DEFAULT_RULE : ruleNo;  // default to rule 110
-        this.pixelsPerCell = zoomLevel < 1 ? DEFAULT_ZOOMLEVEL : Utils.roundZoomLevel(zoomLevel); // default to 4px per cell
+        this.ruleNo = ruleNo < 1 || ruleNo > 255 ? DEFAULT_RULE : ruleNo;
+        this.pixelsPerCell = zoomLevel < 1 ? DEFAULT_ZOOMLEVEL : WolframUtils.sanitizeZoom(zoomLevel);
 
-        PIXEL_ON = ctx.getResources().getColor(R.color.CAView_PixelOn);
-        PIXEL_OFF = ctx.getResources().getColor(R.color.CAView_PixelOff);
+        // an easy future feature would be to make this configurable
+        colorPixelOn = ctx.getResources().getColor(R.color.CAView_PixelOn);
+        colorPixelOff = ctx.getResources().getColor(R.color.CAView_PixelOff);
 
-        // doc
-        tileCache = new ConcurrentHashMap<Long,WolframTile>();
+        // as mentioned in field comment, this should be multi-thread friendly
+        tileCache = new ConcurrentHashMap<Long, WolframTile>();
 
-
+        Log.i(WolframUtils.LOG_TAG, "WolframTileProvider created, rule=" + ruleNo + ", pixelsPerCell=" + pixelsPerCell);
     }
 
+    /**
+     * @return The currently set rule number
+     */
     public int getRule() {
         return ruleNo;
     }
 
+    /**
+     * Set a new rule number
+     *
+     * @param newRule The new rule number.  If not in range 0-255, {@link #DEFAULT_RULE} will be used
+     */
     public void setRule(int newRule) {
 
-        // sanity checking
-        if(newRule < 0){
-            Log.w(Utils.LOG_TAG,"Rule " + newRule + " smaller than range 0-255, defaulting to 0");
-            newRule = 0;
-        }
-        if(newRule > 255){
-            Log.w(Utils.LOG_TAG,"Rule " + newRule + " larger than range 0-255, defaulting to 255");
-            newRule = 255;
+        if (newRule < 1 || newRule > 255) {
+            Log.w(WolframUtils.LOG_TAG, "Rule " + newRule + " not in range 0-255, defaulting to " + DEFAULT_RULE);
+            newRule = DEFAULT_RULE;
         }
 
-        ruleNo  = newRule;
-
+        ruleNo = newRule;
         tileCache.clear();
-
-        renderOrderCnt = 1;
-
     }
 
+    /**
+     * Get the number of pixels wide that each cell will be rendered
+     *
+     * @return The number of pixels
+     */
     public int getPixelsPerCell() {
         return pixelsPerCell;
     }
 
+    /**
+     * Set the number of pixels wide that each cell should be rendered
+     *
+     * @param newZoom The number of pixels (1-16, step of 2). Invalid values will be adjusted to the nearest valid one.
+     */
     public void setPixelsPerCell(int newZoom) {
 
-        // sanity checking
-        newZoom = Utils.roundZoomLevel(newZoom);
+        newZoom = WolframUtils.sanitizeZoom(newZoom);
 
         pixelsPerCell = newZoom;
-
         tileCache.clear();
-
-        renderOrderCnt = 1;
-
     }
 
 
     @Override
-    public Integer[] getTileIndexBounds(){
+    public Integer[] getConfigTileIDLimits() {
 
-        return new Integer[]{null,0,null,null}; //  { left, top, right, bottom }
+        /* Each CA generation is rendered below the previous, so there's no sense in letting the user scroll upwards
+         * beyond y=0 - there's nothing to generate there. (All other scrolling is unlimited) */
+        return new Integer[]{null, 0, null, null};
     }
 
     @Override
-    public int getTileWidthPixels() {
-        return WolframTile.TILE_WIDTH_PX;
+    public GridAnchor getConfigGridAnchor() {
+
+        // have the 0,0 tile (where our first generation is drawn) be anchored to the top of the screen
+        return GridAnchor.TopCenter;
     }
 
+    @Override
+    public int getConfigTileSize() {
+        return Tile.DEFAULT_TILE_SIZE; // default is fine
+    }
 
     @Override
-    public WolframTile getTile(int xId, int yId){
+    public WolframTile getTile(int xId, int yId) {
 
-
-        WolframTile t = tileCache.get(Tile.getCacheKey(xId,yId));
-        if(t != null){
+        // Return any cache hits, otherwise create new, cache and return.  Processing handled by onTileIDRangeChange
+        WolframTile t = tileCache.get(Tile.createCacheKey(xId, yId));
+        if (t != null) {
             return t;
         }
 
-        // cache miss, new tile
-        t = new WolframTile(xId,yId);
-
-        // Log.w(Utils.LOG_TAG, " - Adding " + t + " to cache");
-        tileCache.put(t.cacheKey,t);
-
+        t = new WolframTile(xId, yId);
+        tileCache.put(t.cacheKey, t);
         return t;
 
     }
 
     @Override
-    public GridAnchor getGridAnchor() {
-        return GridAnchor.TopCenter;
-    }
+    public boolean hasFreshData() {
 
-    @Override
-    public boolean hasFreshData(){
-
+        // Set by WolframQueueProcessorTask on new data. Reset value on poll to prevent pointless re-rendering.
         return hasFreshData.getAndSet(false);
     }
 
 
     @Override
     public void onZoomFactorChange(float newZoom) {
-
-        // At the moment, pixelsPerCell is set by a menu item, but pinch-to-zoom is a possibility
-
+        // NOP - At the moment, pixelsPerCell is set by a menu item, but pinch-to-zoom is a possibile future feature
     }
 
     @Override
     public void onTileIDRangeChange(TileRange newRange) {
 
-        // wipe any bmp content that's not currently in view
+        // free up bitmap data of non-rendered tiles (observing OFFSCREEN_TILE_BUFFER). Tile lastCellRow stays.
         Collection<WolframTile> entries = tileCache.values();
-        for(WolframTile t : entries){
-            if(t.bottomState != null && t.getBmpData() != null && !newRange.contains(t,OFFSCREEN_TILE_BUFFER)){
+        for (WolframTile t : entries) {
+            if (t.lastCellRow != null && t.getBmpData() != null && !newRange.contains(t, OFFSCREEN_TILE_BUFFER)) {
                 t.clearBmpData();
             }
         }
 
-        // what we'll tell our background task to work on
         List<WolframTile> renderQueue = new LinkedList<WolframTile>();
 
-        // these values used in inner 'x' loop
+        /* Adding the tiles to the renderQueue in a row-by-row, cell-by-cell manner is not very optimal, given that
+         * the chain of prerequisites (calculated by addPrerequisites) is an inverted triangle.  It's better to add
+         * the tiles that are vertically center in newRange first, then work outwards.  This results in these more
+         * central tiles appearing first, before boundary tiles that may require a lot of off-screen tile processing.
+         * I.e. - The user sees a constant trickle of tiles, rather than nothing for a while, then all tiles at once. */
         int num_tiles_horizontal = newRange.numTilesHorizontal();
-        int half_tiles_horizontal = num_tiles_horizontal/2;
+        int half_tiles_horizontal = num_tiles_horizontal / 2;
 
-        // work out what tiles need renderin'
-        for(int y = newRange.top; y <= newRange.bottom; y++){
+        for (int y = newRange.top; y <= newRange.bottom; y++) {
 
-            /* rather than just loop x from x=visble.left to x<=visible.right, it looks a lot better
-             * to add the middle element first, then add alternate each side adding one element at
-             * a time, so that the tiles flow out from the center as they are rendered, rather than
-             * left to right
-             */
-            for (int i=0; i<num_tiles_horizontal; i++) {
+            for (int i = 0; i < num_tiles_horizontal; i++) {
 
                 // an even i results in the next tile to the right, an odd to the left
-                int offset = half_tiles_horizontal + ( i% 2 == 0 ? i/2 : -(i/2+1));
+                int offset = half_tiles_horizontal + (i % 2 == 0 ? i / 2 : -(i / 2 + 1));
                 int x = newRange.left + offset;
 
                 // the impl of getTile adds the tile to the cache!
                 WolframTile t = getTile(x, y);
-                if(t.getBmpData() != null){
+                if (t.getBmpData() != null) {
                     continue;
                 }
 
@@ -190,61 +260,57 @@ public class WolframTileProvider implements TileProvider {
             }
         }
 
-        Log.d(Utils.LOG_TAG,"RenderQ, size=" + renderQueue.size());
-
-        // init the executor
-        if(executorService == null || executorService.isShutdown()){
+        // init the executor if not ready, and try to kill any previous task, should one exist
+        if (executorService == null || executorService.isShutdown()) {
             executorService = Executors.newSingleThreadExecutor();
         }
-
-        // kill any previous queue processing
-        if(lastSubmittedTask != null){
+        if (lastSubmittedTask != null) {
             lastSubmittedTask.cancel(true);
         }
 
-        // Fire off our jobby.
-        lastSubmittedTask = executorService.submit(new WolframQueueProcessorTask(renderQueue,newRange));
-
+        // fire off the async job
+        Log.d(WolframUtils.LOG_TAG, "Starting async queue processing, queue size:" + renderQueue.size());
+        lastSubmittedTask = executorService.submit(new WolframQueueProcessorTask(renderQueue, newRange));
     }
 
 
-    /*
-     * As well as needing the tile above to be completed, each row of a tile is dependent on its neighbour's
-     * touching boundary to be complete too.  If we required left and right to be complete before calculating,
-     * we'd run into an infinite loop (left needs left needs left.. etc).  Instead, given we know the top of
-     * the model is a row of blanks, we just require that the above left/above/right tiles be completed (resulting
-     * in an inverted triangle of dependent tiles).  We then calculate the left and right boundaries on the fly (we don't
-     * need to calculate the whole neighbour tile, just enough to populate the touching boundary - which only requires
-     * the top row of the neighbour - avoiding the infinite loop).
+    /**
+     * Add any (unprocessed) preqrequisite tiles for the specified tile to the queue.  To generate any given tile,
+     * we need access to the last generation of cells in the above left, above, and above right tiles.  If those
+     * tiles haven't been processed, we keep iterating up the inverse triangle of dependencies (adding all those
+     * found to the queue), until we hit the top row (y=0).
+     *
+     * @param t           The tile whose prerequisite tiles we are searching for
+     * @param renderQueue The queue to add any unprocessed prerequisite tiles to
      */
-    private void addPrerequisites(WolframTile t, List<WolframTile> renderQueue){
-
+    private void addPrerequisites(WolframTile t, List<WolframTile> renderQueue) {
 
         List<WolframTile> deps = new LinkedList<WolframTile>();
 
-        if(t.yId <= 0){  // top row doesn't have prerequisites
+        if (t.yId <= 0) {  // top row doesn't have prerequisites
             return;
         }
 
-        int curY = t.yId-1;   // start one row up
-        int curXMin = t.xId-1, curXMax = t.xId+1;  // scan from y-1 to y+1 of that parent row
+        int curY = t.yId - 1;   // start one row up
+        int curXMin = t.xId - 1, curXMax = t.xId + 1;  // scan from y-1 to y+1 of that parent row
 
         // keep looping up to the top row (y=0) of our model until we're satisfied all dependencies are met
-        while(curY >= 0){
+        while (curY >= 0) {
 
             boolean foundMissing = false;
 
-            for(int x=curXMin; x <= curXMax; x++){
+            for (int x = curXMin; x <= curXMax; x++) {
 
                 // the impl of getTile() above puts the tile in the cache if it wasn't already there
                 WolframTile preReq = getTile(x, curY);
-                if(!renderQueue.contains(preReq) && preReq.bottomState == null){
+                if (!renderQueue.contains(preReq) && preReq.lastCellRow == null) {
                     foundMissing = true;
                     deps.add(preReq);
                 }
             }
 
-            if(!foundMissing){ // no missing prereq tiles were found, we can stop looking
+            // if the current level of prerequisite tiles are already processed, we're done
+            if (!foundMissing) {
                 break;
             }
 
@@ -255,12 +321,17 @@ public class WolframTileProvider implements TileProvider {
 
         }
 
-        // reverse the found dependencies, so higher up rows are before lower in the queue!
+        // we added deps while working upwards - reverse this so higher up tiles get processed first!
         Collections.reverse(deps);
         renderQueue.addAll(deps);
 
     }
 
+    /**
+     * An instance of this task is started every time {@link #onTileIDRangeChange(net.nologin.meep.tbv.TileRange)}
+     * generates a new list of required tiles.  This task processes each tile in order, and when done, toggles the
+     * flag that {@link #hasFreshData()} checks when polled.
+     */
     class WolframQueueProcessorTask implements Runnable {
 
         private List<WolframTile> renderQueue;
@@ -276,158 +347,164 @@ public class WolframTileProvider implements TileProvider {
         @Override
         public void run() {
 
-            Log.e(Utils.LOG_TAG, " **** STARTING QUEUEPROCESSTASK!");
+            Log.d(WolframUtils.LOG_TAG, "WolframQueueProcessorTask task starting");
 
-            // THREAD_PRIORITY_MORE_FAVORABLE
-            while(!renderQueue.isEmpty()){
+            /* this task ends as soon as the queue is finished.  If the provider detects a change in the
+             * list of required tiles, it'll start a new task (requesting that this one stop) */
+            while (!renderQueue.isEmpty()) {
 
-                if(Thread.currentThread().isInterrupted()){
-                    Log.e(Utils.LOG_TAG, " ####################### argh I'm being killed");
+                // check for interruption every time, we need to stop quickly if requested
+                if (Thread.currentThread().isInterrupted()) {
+                    Log.d(WolframUtils.LOG_TAG, "WolframQueueProcessorTask interrupted (new task incoming?)");
                     return;
                 }
 
                 WolframTile t = renderQueue.remove(0);
 
-                // anything to render?
-                if(t == null || t.getBmpData() != null){
+                // sanity check for null or already processed tiles
+                if (t == null || t.getBmpData() != null) {
                     continue;
                 }
 
-                Log.d(Utils.LOG_TAG, "Processing tile " + t);
+                Log.d(WolframUtils.LOG_TAG, "WolframQueueProcessorTask processing tile " + t);
 
                 processTileState(t, visibleRange.contains(t));
 
-                // TODO: huh
+                // allow the hasFreshData() interface method to report that there's new data available
                 hasFreshData.set(true);
             }
 
-            Log.e(Utils.LOG_TAG, " ####################### I finished normally!");
+            Log.d(WolframUtils.LOG_TAG, "WolframQueueProcessorTask task finished normally");
         }
 
-        private void processTileState(WolframTile t, boolean fillBitmap){
+        /**
+         * Calculate the state of all the cells in the tile. When done, we record the state of the last row of cells
+         * in the tile. If requested, the bitmap data to be rendered for this tile is also generated and stored.
+         *
+         * @param t          The tile to process
+         * @param fillBitmap If <code>true</code>, the bitmap data for this cell is generated and stored in the tile,
+         *                   otherwise just the last cell row will be stored.
+         */
+        private void processTileState(WolframTile t, boolean fillBitmap) {
 
-            //Log.w(Utils.LOG_TAG, "Rendering tile: " + t);
+            // how many cells high/wide our square tile measures
+            int cellsPerEdge = Tile.DEFAULT_TILE_SIZE / pixelsPerCell;
 
-
-            // While each tile has a fixed size, the data contained within is defined by the 'pixelsPerCell' zoomlevel
-            int cellsPerTile = WolframTile.TILE_WIDTH_PX / pixelsPerCell;
-
+            // bitmap data is stored as an int array updated row by row, then converted to bmp at the end
             int[] bmpData = null;
-            if(fillBitmap){
-                bmpData = new int[cellsPerTile*cellsPerTile];
+            if (fillBitmap) {
+                bmpData = new int[cellsPerEdge * cellsPerEdge]; // rows * cols
             }
 
-            // hold the current state 'row', across three adjacent tiles (tile t in middle)
-            boolean[] curState = new boolean[cellsPerTile * 3];
+            // 'current' generation, across 3 tiles (tile t in center)
+            boolean[] curGenCells = new boolean[cellsPerEdge * 3];
 
-            // hold the state of the row above curState
-            boolean[] prevState = new boolean[curState.length];
+            // 'next' generation (same length)
+            boolean[] nextGenCells = new boolean[curGenCells.length];
 
-
-            // for any tile not on the 'top' row, we need the state of the bottom
-            // of each of the three tiles above (above left, directly above, above right)
-            if(t.yId != 0){
+            /* Copy the last cell row in the top-left, top and top-right tiles into each third of the 'curGenCells'
+             * array respectively - this is our 'starting state' (first tile row has no starting state) */
+            if (t.yId != 0) {
                 int yAbove = t.yId - 1;
                 try {
-                    boolean[] stateAL = getBottomStateFromPrereqTile(t.xId - 1, yAbove);
-                    boolean[] stateA = getBottomStateFromPrereqTile(t.xId, yAbove);
-                    boolean[] stateAR = getBottomStateFromPrereqTile(t.xId + 1, yAbove);
+                    boolean[] stateAL = getLastCellRowState(t.xId - 1, yAbove);
+                    boolean[] stateA = getLastCellRowState(t.xId, yAbove);
+                    boolean[] stateAR = getLastCellRowState(t.xId + 1, yAbove);
 
-                    System.arraycopy(stateAL,0,prevState,0,cellsPerTile);
-                    System.arraycopy(stateA,0,prevState,cellsPerTile,cellsPerTile);
-                    System.arraycopy(stateAR,0,prevState,cellsPerTile*2,cellsPerTile);
+                    System.arraycopy(stateAL, 0, curGenCells, 0, cellsPerEdge);
+                    System.arraycopy(stateA, 0, curGenCells, cellsPerEdge, cellsPerEdge);
+                    System.arraycopy(stateAR, 0, curGenCells, cellsPerEdge * 2, cellsPerEdge);
 
-                }
-                catch(IllegalStateException e){
-                    Log.w(Utils.LOG_TAG, "Cannot process tile " + t + ", error:" + e.getMessage());
+                } catch (IllegalStateException e) {
+                    Log.w(WolframUtils.LOG_TAG, "Cannot process tile " + t + ", error:" + e.getMessage());
                     return;
                 }
             }
 
+            // set end pointers to one element in from each side of nextGenCells (see class doc for logic)
+            int leftPtr = 1, rightPtr = curGenCells.length - 2;
 
-            int leftPtr = 1, rightPtr = prevState.length-2;
+            for (int row = 0; row < cellsPerEdge; row++) { // for each row of cells in tile t
 
 
-            for (int row = 0; row < cellsPerTile; row++) {
+                if (row == 0 && t.yId == 0) {
 
-                // update 'newState' for the current row
-                if(row == 0 && t.yId == 0){
-                    // don't do anything...
-                    // .. unless you're tile -1<=x<=1, in which case we need to fix your references to the start state
-                    // (-1 will see it on the right of curState, 0 will see it in the middle, 1 over to the left )
-                    if((t.xId == -1 || t.xId == 0 || t.xId == 1)){
-                        curState[curState.length/2 - (t.xId * cellsPerTile)] = true;
+                   /* For all our rules, we start our very first row of cells, in every tile on the first row (y=0)
+                    * to be false(off), except for one cell right in the middle of tile x=0.  This is our CA starting
+                    * data.
+                    *
+                    * If the xId==0, we set the first cell row's middle cell to true.  However, we shouldn't forget
+                    * that neighbouring tiles x=-1 and x=1 need to see this value (in the right and left segments of
+                    * nextGenCells respectively) */
+                    if ((t.xId == -1 || t.xId == 0 || t.xId == 1)) {
+                        nextGenCells[nextGenCells.length / 2 - (t.xId * cellsPerEdge)] = true;
                     }
-                }
-                else {
-                    // all other rows in all other tiles, we simply rule check on the previous state
-                    for(int col = leftPtr; col <= rightPtr; col++){
-                        curState[col] = WolframRuleTable.checkRule(ruleNo,prevState[col-1],prevState[col],prevState[col+1]);
-                    }
-                }
 
-                if(fillBitmap){
-                    // populate the 'bmpData' segment for this tile
-                    int rowOffset = row * cellsPerTile;
-                    for(int col=cellsPerTile;col<cellsPerTile*2;col++){
-                        int val = curState[col] ? PIXEL_ON : PIXEL_OFF;
-                        bmpData[rowOffset+col-cellsPerTile] = val;
+                } else {
+                    // for all other cell rows in all other tiles, simply do a rule lookup
+                    for (int col = leftPtr; col <= rightPtr; col++) {
+                        nextGenCells[col] = WolframRuleTable.getNextState(ruleNo,
+                                curGenCells[col - 1], curGenCells[col], curGenCells[col + 1]);
                     }
                 }
 
-                // save the state of the bottom row
-                if(row == cellsPerTile-1){
-                    t.bottomState = new boolean[cellsPerTile];
-                    System.arraycopy(curState,cellsPerTile,t.bottomState,0,cellsPerTile);
+                // mid segment of nextGenCells holds the data for the respective row of the bitmap content (if needed)
+                if (fillBitmap) {
+                    int rowOffset = row * cellsPerEdge;
+                    for (int col = cellsPerEdge; col < cellsPerEdge * 2; col++) {
+                        int val = nextGenCells[col] ? colorPixelOn : colorPixelOff;
+                        bmpData[rowOffset + col - cellsPerEdge] = val;
+                    }
                 }
 
-                System.arraycopy(curState,0,prevState,0,prevState.length);
+                /* finally, regardless of whether we want a bitmap or not, we keep a copy of the last cell row
+                 * (the mid segment of nextGenCells) */
+                if (row == cellsPerEdge - 1) {
+                    t.lastCellRow = new boolean[cellsPerEdge];
+                    System.arraycopy(nextGenCells, cellsPerEdge, t.lastCellRow, 0, cellsPerEdge);
+                }
 
+                // the 'next' generation becomes the current, and we loop
+                System.arraycopy(nextGenCells, 0, curGenCells, 0, curGenCells.length);
 
             }
 
-            if(fillBitmap){
-
-                Bitmap bmp = Bitmap.createBitmap(cellsPerTile,cellsPerTile, Bitmap.Config.RGB_565);
-                bmp.setPixels(bmpData,0,cellsPerTile,0,0,cellsPerTile,cellsPerTile);
-                t.setBmpData(Bitmap.createScaledBitmap(bmp,WolframTile.TILE_WIDTH_PX, WolframTile.TILE_WIDTH_PX, false));
-
-
+            // finally, if needed, we convert the int array of colours into the desired bitmap
+            if (fillBitmap) {
+                Bitmap bmp = Bitmap.createBitmap(cellsPerEdge, cellsPerEdge, Bitmap.Config.RGB_565);
+                bmp.setPixels(bmpData, 0, cellsPerEdge, 0, 0, cellsPerEdge, cellsPerEdge);
+                t.setBmpData(Bitmap.createScaledBitmap(bmp, Tile.DEFAULT_TILE_SIZE, Tile.DEFAULT_TILE_SIZE, false));
             }
-
-            t.renderOrder = renderOrderCnt++;
 
         }
 
 
-        private boolean[] getBottomStateFromPrereqTile(int xId, int yId){
-            WolframTile tile = tileCache.get(Tile.getCacheKey(xId,yId));
-            if(tile == null){
+        // Convenience method to get the last row of cells from the desired tile with some sanity checking
+        private boolean[] getLastCellRowState(int xId, int yId) {
+            WolframTile tile = tileCache.get(Tile.createCacheKey(xId, yId));
+            if (tile == null) {
                 throw new IllegalStateException("Prerequisite tile (" + xId + "," + yId + ") not in cache");
             }
-            if(tile.bottomState == null){
+            if (tile.lastCellRow == null) {
                 throw new IllegalStateException("Prerequisite tile (" + xId + "," + yId + ") not yet processed");
             }
-            return tile.bottomState;
+            return tile.lastCellRow;
         }
     }
 
     @Override
-    public void onSurfaceDestroyed(){
+    public void onSurfaceDestroyed() {
 
         // ensure we don't leave any hanging threads
-        if(executorService != null) {
+        if (executorService != null) {
             executorService.shutdownNow();
         }
 
     }
 
-
     @Override
-    public String getDebugSummary(){
+    public String getDebugSummary() {
         return String.format("WolframProv[r=%d,cache=%d]", ruleNo, tileCache.size());
     }
-
-
 
 }

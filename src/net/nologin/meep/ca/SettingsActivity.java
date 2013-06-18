@@ -2,19 +2,19 @@ package net.nologin.meep.ca;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.view.View;
 import android.widget.TextView;
-import net.nologin.meep.ca.util.Utils;
 
+/**
+ * Settings activity.  At the moment, there's just a debug option and an about dialog.
+ */
 public class SettingsActivity extends PreferenceActivity {
 
+    // key for debug preference
     public static final String PREF_KEY_SHOW_DEBUG = "pref_key_show_debug";
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,7 @@ public class SettingsActivity extends PreferenceActivity {
                 View inflatedDialog = getLayoutInflater().inflate(R.layout.about_wolframca, null);
 
                 TextView tv = (TextView)inflatedDialog.findViewById(R.id.about_version);
-                String verName = Utils.getAppVersionName(ctx);
+                String verName = WolframUtils.getAppVersionName(ctx);
                 tv.setText(ctx.getString(R.string.aboutdialog_versionfmt,verName));
 
                 new AlertDialog.Builder(ctx)

@@ -2,36 +2,24 @@ package net.nologin.meep.ca.model;
 
 import net.nologin.meep.tbv.Tile;
 
+/**
+ * We use a sublcass of {@link Tile} because we need to store some of the calculated rule data in
+ * each tile as well as the bitmap data that {@link Tile} stores.
+ * <br/><br/>
+ * The {@link WolframTileProvider} will clear the bitmap data from tiles that are scrolled off-screen.
+ * Should we need that bitmap data again, the provider can use the saved state that's still in each
+ * tile to quickly regenerate that tile's contents, instead of regenerating _all_ dependent tiles again.
+ *
+ * @see WolframTileProvider The WolframTileProvider contains a description of the tile
+ *      generation process.
+ */
 public class WolframTile extends Tile {
 
-    /* From playing around with tile/bitmap size, it seems somewhere around 256 is
-     * a good balance for tile size.  If the tile size is too big, the longer processing time
-     * for each tile ruins the feeling of responsiveness (it also can gobble the heap).
-     * If it's too small, there's more heap/queue object processing and while 'responsive',
-     * it'll be slow. */
-    public static final int TILE_WIDTH_PX = 256;
-
-    /* We can't really keep the bmpData data for every tile generated in memory, otherwise we'd quickly
-     * run out of heap space (as the user scrolls further away from the start position).
-     *
-     * When this tile goes out of view, the caller will clear the bmpData data from this Tile instance.
-     * To save it having to recalculate the contents (should this tile be scrolled back into view), we
-     * keep a boolean array of the bottom row/state of this tile (doesn't get cleared with the bmpData data).
-     *
-     * This way, any Tile's bmpData contents can quickly be recalculated using the bottom state
-     * from the three tiles above.
-     *
-     */
-    boolean[] bottomState = null;
-
-    public int renderOrder = -1; // debug for determining when a cell was rendered
+    // the state that we'll keep even when the provider wipes the bitmap content
+    boolean[] lastCellRow = null;
 
     public WolframTile(int xId, int yId) {
-        super(xId, yId, TILE_WIDTH_PX);
-    }
-
-    public String toString(){
-        return "Wolf" + super.toString();
+        super(xId, yId);
     }
 
 }

@@ -1,13 +1,13 @@
-<menu xmlns:android=
-              "http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- ActionBarSherlock menu bar for main wolfram ca activity -->
 
     <!-- launch rule selection dialog -->
     <item
             android:id="@+id/actionbar_changerule"
             android:icon="@android:drawable/ic_menu_gallery"
             android:showAsAction="always|withText"
-            android:title="change rule">
+            android:title="@string/actionbar_but_changerule">
     </item>
 
 
@@ -16,16 +16,16 @@
             android:id="@+id/actionbar_changezoom"
             android:icon="@android:drawable/ic_menu_zoom"
             android:showAsAction="always|withText"
-            android:title="change zoom">
+            android:title="@string/actionbar_but_changezoom">
     </item>
 
 
-    <!-- back to start -->
+    <!-- back to top -->
     <item
-            android:id="@+id/actionbar_backtostart"
+            android:id="@+id/actionbar_backtotop"
             android:icon="@android:drawable/ic_menu_mylocation"
-            android:showAsAction="ifRoom|withText"
-            android:title="back to top">
+            android:showAsAction="always|withText"
+            android:title="@string/actionbar_but_backtotop">
     </item>
 
     <!-- settings, if room -->
@@ -33,7 +33,7 @@
             android:id="@+id/actionbar_settings"
             android:icon="@drawable/ic_action_settings"
             android:showAsAction="ifRoom"
-            android:title="settings">
+            android:title="@string/actionbar_but_settings">
     </item>
 
 </menu>
