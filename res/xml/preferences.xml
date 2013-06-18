@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--
+      Settings Screen. This is pre-honeycomb/fragment stuff to support 2.3+.
+      Future releases should consider supplementing the app with a fragment version.
+      (See SettingsActivity.java)
+-->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="@string/settings_category_general">
@@ -12,7 +17,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_category_about">
-        <!-- Enable once the source has been pushed to github
+
         <Preference
                 android:title="@string/setting_githubpage_title"
                 android:summary="@string/setting_githubpage_summary">
@@ -20,7 +25,7 @@
                     android:action="android.intent.action.VIEW"
                     android:data="@string/setting_githubpage_url"/>
         </Preference>
-         -->
+
         <Preference
                 android:key="pref_key_about"
                 android:title="@string/setting_about_title">

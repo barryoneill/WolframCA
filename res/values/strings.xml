@@ -30,7 +30,7 @@
     <string name="setting_showdebug_summaryoff">Debug information will not be shown</string>
     <string name="setting_githubpage_title">WolframCA on GitHub</string>
     <string name="setting_githubpage_summary">Go to the WolframCA project page on GitHub</string>
-    <string name="setting_githubpage_url">http://github.com/barryoneill</string><!-- todo: update when live -->
+    <string name="setting_githubpage_url">http://github.com/barryoneill/WolframCA</string>
     <string name="setting_about_title">About WolframCA</string>
 
 
