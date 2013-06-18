@@ -21,6 +21,7 @@ Dialog layout for 'Change Zoom'
                 android:src="@drawable/ic_action_arrow_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/ruledialog_zoomPrev"
                 />
 
         <TextView
@@ -38,6 +39,7 @@ Dialog layout for 'Change Zoom'
                 android:src="@drawable/ic_action_arrow_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/ruledialog_zoomNext"
                 />
 
     </LinearLayout>

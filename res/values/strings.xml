@@ -12,12 +12,15 @@
     <string name="ruledialog_ruleSummary">Rule %1$s</string>
     <string name="ruledialog_ruleSliderStartVal">0</string>
     <string name="ruledialog_ruleSliderEndVal">255</string>
+    <string name="ruledialog_rulePrev">Previous Rule</string>
+    <string name="ruledialog_ruleNext">Next Rule</string>
 
     <string name="zoomdialog_title">Select Zoom</string>
     <string name="zoomdialog_zoomSummary">%1$spx per Cell</string>
     <string name="zoomDialog_zoomSliderStartVal">1px/cell (slower)</string>
     <string name="zoomDialog_zoomSliderEndVal">16px/cell (faster)</string>
-
+    <string name="ruledialog_zoomPrev">Smaller Zoom</string>
+    <string name="ruledialog_zoomNext">Larger Zoom</string>
 
     <string name="settings_category_general">General Settings</string>
     <string name="settings_category_about">Miscellaneous</string>
