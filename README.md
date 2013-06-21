@@ -76,11 +76,12 @@ the libraries mentioned above as dependencies, and the project should compile an
 
 In order to understand how the tiles are fetched and displayed, you should take a look at 
 the README of the [TiledBitmapView library](https://github.com/barryoneill/TiledBitmapView).  
+
 All the classes are well commented, so the main/settings activity classes should be self explanatory. 
 The more subject-matter related classes are:
 
 * [**WolframTileProvider**](https://github.com/barryoneill/WolframCA/blob/master/src/net/nologin/meep/ca/model/WolframTileProvider.java)
-	- This implementation of the TBV library's [TileProvider](http://barryoneill.github.io/TiledBitmapView/javadoc/index.html?net/nologin/meep/tbv/TileProvider.html) 
+	- This implementation of the [TileProvider](http://barryoneill.github.io/TiledBitmapView/javadoc/index.html?net/nologin/meep/tbv/TileProvider.html) 
 		interface is where the majority of the interesting code is.  The generation data of the 
 		currently selected rule is calculated and stored here, and the code for rendering this 
 		data into tiles for display is also in this class.
