@@ -10,7 +10,7 @@ early 1980s papers.
 *Wolfram Mathwold*'s page '[Elementary Cellular Automaton](http://mathworld.wolfram.com/ElementaryCellularAutomaton.html)'
 	has an excellent summary of the topic.
 
-The book '*Think Complexity*' is freely available as a PDF from [the publisher's bookpage](http://www.greenteapress.com/compmod/). 
+The book *'Think Complexity'* is freely available as a PDF from [the publisher's bookpage](http://www.greenteapress.com/compmod/). 
 
 ### Installation ###
 **[Version 1.4 of the app is available in the Play Store](https://play.google.com/store/apps/details?id=net.nologin.meep.ca)**, 
