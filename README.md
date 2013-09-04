@@ -7,10 +7,12 @@ automaton (CA).  This was inspired by chapter 6 of Allen B. Downey's excellent b
 '*Think Complexity*', where he describes the set of CAs as presented by Steven Wolfram in a set of 
 early 1980s papers.
 
-*Wolfram Mathwold*'s page '[Elementary Cellular Automaton](http://mathworld.wolfram.com/ElementaryCellularAutomaton.html)'
-	has an excellent summary of the topic.
+### Further Reading ###
 
-The book *'Think Complexity'* is freely available as a PDF from [the publisher's bookpage](http://www.greenteapress.com/compmod/). 
+* *Wolfram Mathworld*'s page '[Elementary Cellular Automaton](http://mathworld.wolfram.com/ElementaryCellularAutomaton.html)'
+	has an excellent summary of the topic.
+* The book *'Think Complexity'* is freely available as a PDF from [the publisher's bookpage](http://www.greenteapress.com/compmod/).
+* Dr. Steven Wolfram's ['Wolfram Science' Website](http://www.wolframscience.com)   
 
 ### Installation ###
 **[Version 1.4 of the app is available in the Play Store](https://play.google.com/store/apps/details?id=net.nologin.meep.ca)**, 
@@ -91,6 +93,14 @@ The more subject-matter related classes are:
 	- Subclass of the library's [TiledBitmapView](https://github.com/barryoneill/TiledBitmapView) 
 		class, encapsulates code to let the main activity interact with our provider implementation.
 
+### Licensing ###
+
+This app is licensed under the Apache 2.0 License, but also uses material that is copyright © 2002 
+Stephen Wolfram, LLC. The author acknowledges that such material is used with limited permission 
+from and disclaims all affiliation with Stephen Wolfram, LLC.
+
+See the [**LICENSE**](https://github.com/barryoneill/WolframCA/blob/master/LICENSE) file for the 
+full license details.
 
 ## To Do ##
 

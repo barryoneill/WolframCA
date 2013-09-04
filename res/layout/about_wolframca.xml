@@ -76,7 +76,7 @@
                     android:text="@string/aboutdialog_author"
                     />
 
-            <!-- 'you install it, you accept responsibilty, etc' -->
+            <!-- 'you install it, you accept responsibility, etc' -->
             <TextView
                     android:id="@+id/about_legal"
                     android:layout_width="fill_parent"
@@ -86,6 +86,17 @@
                     android:textStyle="italic"
                     android:padding="2dp"
                     android:text="@string/aboutdialog_disclaimer"/>
+
+            <!-- disclaimer as requested by Steven Wolfram LLC lawyer -->
+            <TextView
+                    android:id="@+id/about_wolfram"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textSize="12sp"
+                    android:textStyle="italic"
+                    android:padding="2dp"
+                    android:text="@string/aboutdialog_wolfram_disclaimer"/>
 
         </LinearLayout>
 
